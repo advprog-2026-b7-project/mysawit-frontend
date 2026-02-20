@@ -35,3 +35,20 @@ jobs:
 
       - name: Production Build
         run: pnpm build
+
+      - name: Cache SonarCloud packages
+        uses: actions/cache@v3
+        with:
+         - path: ~/.sonar/cache
+         - key: ${{ runner.os }}-sonar
+         - restore-keys: ${{ runner.os }}-sonar
+
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarcloud-github-action@v2
+        with:
+         args: >
+          -Dsonar.projectKey=advprog-2026-b7-project_mysawit-frontend
+          -Dsonar.organization=adpro-kelompok-b7
+          -Dsonar.java.binaries=build/classes
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_KEY }}

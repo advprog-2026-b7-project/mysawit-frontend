@@ -2,73 +2,92 @@
 
 import { useState } from "react";
 import { plantationClient } from "@/features/plantation/api";
-import type { PlantationCreateRequest } from "@/features/plantation/types";
-import styles from "./PlantationForm.module.css";
+import type {
+  PlantationCreateRequest,
+  Coordinate,
+} from "@/features/plantation/types";
 
 interface PlantationFormProps {
   onSuccess?: (plantationId: string) => void;
 }
 
-const initialFormState: PlantationCreateRequest = {
-  code: "",
-  name: "",
-  location: "",
-  areaHectares: 0,
-  treeCount: 0,
-  managerName: "",
-  notes: "",
-};
+const CORNER_LABELS = [
+  "Top-Left (NW)",
+  "Top-Right (NE)",
+  "Bottom-Right (SE)",
+  "Bottom-Left (SW)",
+];
+
+const emptyCoordinates = (): Coordinate[] => [
+  { latitude: 0, longitude: 0 },
+  { latitude: 0, longitude: 0 },
+  { latitude: 0, longitude: 0 },
+  { latitude: 0, longitude: 0 },
+];
 
 export default function PlantationForm({ onSuccess }: PlantationFormProps) {
-  const [formData, setFormData] = useState<PlantationCreateRequest>(initialFormState);
+  const [plantationCode, setPlantationCode] = useState("");
+  const [plantationName, setPlantationName] = useState("");
+  const [areaSize, setAreaSize] = useState("");
+  const [coordinates, setCoordinates] = useState<Coordinate[]>(
+    emptyCoordinates()
+  );
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
-  const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  const updateCoordinate = (
+    index: number,
+    field: keyof Coordinate,
+    value: string
   ) => {
-    const { name, value } = e.target;
-
-    setFormData((prev) => ({
-      ...prev,
-      [name]:
-        name === "areaHectares" || name === "treeCount"
-          ? (value ? Number(value) : 0)
-          : value,
-    }));
+    setCoordinates((prev) =>
+      prev.map((coord, i) =>
+        i === index ? { ...coord, [field]: value ? parseFloat(value) : 0 } : coord
+      )
+    );
   };
 
   const resetForm = () => {
-    setFormData(initialFormState);
+    setPlantationCode("");
+    setPlantationName("");
+    setAreaSize("");
+    setCoordinates(emptyCoordinates());
+    setError(null);
+    setSuccess(null);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
     setError(null);
     setSuccess(null);
 
+    if (!plantationCode.trim()) {
+      setError("Plantation code is required");
+      return;
+    }
+    if (!plantationName.trim()) {
+      setError("Plantation name is required");
+      return;
+    }
+    if (!areaSize || parseFloat(areaSize) <= 0) {
+      setError("Area size must be a positive number");
+      return;
+    }
+
+    const payload: PlantationCreateRequest = {
+      plantationCode: plantationCode.trim(),
+      plantationName: plantationName.trim(),
+      areaSize: parseFloat(areaSize),
+      coordinates,
+    };
+
+    setLoading(true);
+
     try {
-      if (!formData.code.trim()) {
-        throw new Error("Plantation code is required");
-      }
-      if (!formData.name.trim()) {
-        throw new Error("Plantation name is required");
-      }
-      if (!formData.location.trim()) {
-        throw new Error("Location is required");
-      }
-      if (formData.areaHectares <= 0) {
-        throw new Error("Area must be a positive number");
-      }
-      if (formData.treeCount < 0) {
-        throw new Error("Tree count cannot be negative");
-      }
-
-      const response = await plantationClient.createPlantation(formData);
+      const response = await plantationClient.createPlantation(payload);
       const createdId = response.id || "(ID unavailable)";
-
       setSuccess(`Plantation created successfully! ID: ${createdId}`);
       resetForm();
 
@@ -84,151 +103,137 @@ export default function PlantationForm({ onSuccess }: PlantationFormProps) {
     }
   };
 
+  const inputClass =
+    "w-full border border-gray-300 rounded-md px-3 py-2 mt-1 text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-green-500 focus:outline-none";
+
   return (
-    <div className={styles.container}>
-      <h1 className={styles.title}>Plantation Registration</h1>
-      <p className={styles.subtitle}>
-        Register plantation data so it can be used by other modules
-      </p>
+    <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4 py-10">
+      <div className="max-w-xl w-full bg-white shadow-lg rounded-lg p-8">
+        <h1 className="text-2xl font-bold text-gray-900 text-center mb-2">
+          Register Plantation
+        </h1>
 
-      {error && (
-        <div className={styles.alert + " " + styles.alertError}>
-          <strong>Error!</strong> {error}
-          <div className={styles.hint}>
-            <p>
-              <strong>Troubleshooting:</strong>
-            </p>
-            <ul>
-              <li>Make sure the plantation backend service is running</li>
-              <li>Check your internet connection</li>
-              <li>Reload page and try again</li>
-              <li>Verify all required form fields are filled correctly</li>
-            </ul>
+        <p className="text-gray-700 text-center mb-6">
+          Fill in the details below to register a new plantation
+        </p>
+
+        {error && (
+          <div className="bg-red-50 border border-red-300 text-red-800 text-sm p-3 rounded mb-4">
+            {error}
           </div>
-        </div>
-      )}
+        )}
 
-      {success && (
-        <div className={styles.alert + " " + styles.alertSuccess}>
-          <strong>Success!</strong> {success}
-        </div>
-      )}
+        {success && (
+          <div className="bg-green-50 border border-green-300 text-green-800 text-sm p-3 rounded mb-4">
+            {success}
+          </div>
+        )}
 
-      <form onSubmit={handleSubmit}>
-        <div className={styles.formGroup}>
-          <label htmlFor="code">
-            Plantation Code <span className={styles.required}>*</span>
-          </label>
-          <input
-            type="text"
-            id="code"
-            name="code"
-            value={formData.code}
-            onChange={handleInputChange}
-            placeholder="Enter plantation code (e.g., PLANT-001)"
-            required
-          />
-        </div>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="text-sm font-semibold text-gray-900">
+              Plantation Code <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              value={plantationCode}
+              onChange={(e) => setPlantationCode(e.target.value)}
+              placeholder="e.g. PLANT-001"
+              className={inputClass}
+              required
+            />
+          </div>
 
-        <div className={styles.formGroup}>
-          <label htmlFor="name">
-            Plantation Name <span className={styles.required}>*</span>
-          </label>
-          <input
-            type="text"
-            id="name"
-            name="name"
-            value={formData.name}
-            onChange={handleInputChange}
-            placeholder="Enter plantation name"
-            required
-          />
-        </div>
+          <div>
+            <label className="text-sm font-semibold text-gray-900">
+              Plantation Name <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              value={plantationName}
+              onChange={(e) => setPlantationName(e.target.value)}
+              placeholder="e.g. Palm Field A"
+              className={inputClass}
+              required
+            />
+          </div>
 
-        <div className={styles.formGroup}>
-          <label htmlFor="location">
-            Location <span className={styles.required}>*</span>
-          </label>
-          <input
-            type="text"
-            id="location"
-            name="location"
-            value={formData.location}
-            onChange={handleInputChange}
-            placeholder="Enter plantation location"
-            required
-          />
-        </div>
+          <div>
+            <label className="text-sm font-semibold text-gray-900">
+              Area Size (hectares) <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="number"
+              step="0.01"
+              min="0.01"
+              value={areaSize}
+              onChange={(e) => setAreaSize(e.target.value)}
+              placeholder="e.g. 120.5"
+              className={inputClass}
+              required
+            />
+          </div>
 
-        <div className={styles.formGroup}>
-          <label htmlFor="areaHectares">
-            Area (hectares) <span className={styles.required}>*</span>
-          </label>
-          <input
-            type="number"
-            id="areaHectares"
-            name="areaHectares"
-            value={formData.areaHectares || ""}
-            onChange={handleInputChange}
-            min="0"
-            step="0.01"
-            placeholder="Enter plantation area in hectares"
-            required
-          />
-          <div className={styles.hint}>Must be a positive number</div>
-        </div>
+          <div>
+            <label className="text-sm font-semibold text-gray-900 block mb-2">
+              Square Coordinates (4 corners) <span className="text-red-500">*</span>
+            </label>
 
-        <div className={styles.formGroup}>
-          <label htmlFor="treeCount">Total Trees</label>
-          <input
-            type="number"
-            id="treeCount"
-            name="treeCount"
-            value={formData.treeCount || ""}
-            onChange={handleInputChange}
-            min="0"
-            step="1"
-            placeholder="Enter total number of trees"
-          />
-        </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {coordinates.map((coord, index) => (
+                <div
+                  key={index}
+                  className="border border-gray-200 rounded-md p-3 bg-gray-50"
+                >
+                  <p className="text-xs font-semibold text-green-700 mb-2">
+                    Point {index + 1} — {CORNER_LABELS[index]}
+                  </p>
+                  <input
+                    type="number"
+                    step="any"
+                    value={coord.latitude || ""}
+                    onChange={(e) =>
+                      updateCoordinate(index, "latitude", e.target.value)
+                    }
+                    placeholder="Latitude"
+                    className={inputClass + " text-sm mb-2"}
+                    required
+                  />
+                  <input
+                    type="number"
+                    step="any"
+                    value={coord.longitude || ""}
+                    onChange={(e) =>
+                      updateCoordinate(index, "longitude", e.target.value)
+                    }
+                    placeholder="Longitude"
+                    className={inputClass + " text-sm"}
+                    required
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
 
-        <div className={styles.formGroup}>
-          <label htmlFor="managerName">Manager Name</label>
-          <input
-            type="text"
-            id="managerName"
-            name="managerName"
-            value={formData.managerName || ""}
-            onChange={handleInputChange}
-            placeholder="Enter manager name"
-          />
-        </div>
-
-        <div className={styles.formGroup}>
-          <label htmlFor="notes">Notes</label>
-          <textarea
-            id="notes"
-            name="notes"
-            value={formData.notes || ""}
-            onChange={handleInputChange}
-            placeholder="Add optional notes about this plantation"
-          />
-        </div>
-
-        <div className={styles.buttonGroup}>
-          <button type="submit" className={styles.btnSubmit} disabled={loading}>
-            {loading ? "Submitting..." : "Create Plantation"}
-          </button>
-          <button
-            type="reset"
-            className={styles.btnReset}
-            onClick={resetForm}
-            disabled={loading}
-          >
-            Clear Form
-          </button>
-        </div>
-      </form>
+          <div className="flex items-center gap-3 pt-2">
+            <button
+              type="submit"
+              disabled={loading}
+              className="flex-1 bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white font-medium py-2 rounded-md transition"
+            >
+              {loading ? "Submitting..." : "Register Plantation"}
+            </button>
+            <button
+              type="button"
+              onClick={resetForm}
+              disabled={loading}
+              className="flex-1 border border-gray-300 bg-white hover:bg-gray-50 text-gray-700 font-medium py-2 rounded-md transition"
+            >
+              Clear Form
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 }

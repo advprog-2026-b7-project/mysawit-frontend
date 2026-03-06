@@ -1,4 +1,4 @@
-import apiClient from "@/services/apiClient";
+import harvestServiceClient from "@/services/harvestClient";
 import type { HarvestCreateRequest, HarvestResponse } from "./types";
 
 class HarvestClient {
@@ -21,7 +21,7 @@ class HarvestClient {
       });
     }
 
-    const response = await apiClient.post<HarvestResponse>(
+    const response = await harvestServiceClient.post<HarvestResponse>(
       "/harvests",
       formData,
       {

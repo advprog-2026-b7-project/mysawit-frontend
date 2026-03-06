@@ -1,11 +1,11 @@
-import apiClient from "@/services/apiClient";
+import plantationServiceClient from "@/services/plantationClient";
 import type { PlantationCreateRequest, PlantationResponse } from "./types";
 
 class PlantationClient {
 	async createPlantation(
 		request: PlantationCreateRequest
 	): Promise<PlantationResponse> {
-		const response = await apiClient.post<PlantationResponse>(
+		const response = await plantationServiceClient.post<PlantationResponse>(
 			"/plantations",
 			request
 		);

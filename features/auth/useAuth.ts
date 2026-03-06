@@ -3,14 +3,19 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 
+interface AuthUser {
+  id: string;
+  username: string;
+  email?: string;
+  authProvider?: string;
+}
+
 export function useAuth() {
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
+  const loadCurrentUser = async () => {
     const token = localStorage.getItem("token");
-
-    console.log("useAuth: token in localStorage =", token ? token.substring(0, 20) + "..." : null);
 
     if (!token) {
       setLoading(false);
@@ -20,28 +25,25 @@ export function useAuth() {
     const baseURL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
     const url = `${baseURL}/api/auth/me`;
 
-    console.log("useAuth: fetching", url);
-    console.log("useAuth: Authorization header =", `Bearer ${token.substring(0, 20)}...`);
-
-    axios
-      .get(url, {
+    try {
+      const response = await axios.get<AuthUser>(url, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
-      })
-      .then((res) => {
-        console.log("useAuth: /auth/me success", res.data);
-        setUser(res.data);
-      })
-      .catch((err) => {
-        console.error("useAuth: /auth/me failed", err?.response?.status, err?.response?.data, err?.message);
-        if (err?.response?.status === 401) {
-          localStorage.removeItem("token");
-        }
-      })
-      .finally(() => {
-        setLoading(false);
       });
+
+      setUser(response.data);
+    } catch (err: unknown) {
+      if (axios.isAxiosError(err) && err.response?.status === 401) {
+        localStorage.removeItem("token");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    void loadCurrentUser();
   }, []);
 
   const logout = () => {

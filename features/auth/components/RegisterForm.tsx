@@ -4,6 +4,14 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRegister } from "../hooks";
 
+type UserRole = "BURUH" | "MANDOR" | "ADMIN" | "SUPIR";
+
+const USER_ROLES: UserRole[] = ["BURUH", "MANDOR", "ADMIN", "SUPIR"];
+
+function isUserRole(value: string): value is UserRole {
+  return USER_ROLES.includes(value as UserRole);
+}
+
 export default function RegisterForm() {
   const { register, loading, error } = useRegister();
 
@@ -11,7 +19,7 @@ export default function RegisterForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [role, setRole] = useState<"BURUH" | "MANDOR" | "ADMIN" | "SUPIR">("BURUH");
+  const [role, setRole] = useState<UserRole>("BURUH");
   const [validationError, setValidationError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -133,7 +141,12 @@ export default function RegisterForm() {
               text-gray-900
               focus:ring-2 focus:ring-green-500"
                value={role}
-              onChange={(e) => setRole(e.target.value as any)}
+              onChange={(e) => {
+                const nextRole = e.target.value;
+                if (isUserRole(nextRole)) {
+                  setRole(nextRole);
+                }
+              }}
             >
               <option value="BURUH">Buruh</option>
               <option value="MANDOR">Mandor</option>

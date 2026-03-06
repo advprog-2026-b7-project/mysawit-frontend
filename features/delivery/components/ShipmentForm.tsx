@@ -46,7 +46,7 @@ export default function ShipmentForm({ onSuccess }: ShipmentFormProps) {
             setSuccess(`Shipment created! ID: ${response.id}`);
             resetForm();
             if (onSuccess) onSuccess(response.id);
-        } catch (err: any) {
+        } catch (err: unknown) {
             setError(err.message || "Failed to create shipment");
         } finally {
             setLoading(false);

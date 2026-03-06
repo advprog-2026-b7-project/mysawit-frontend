@@ -47,7 +47,11 @@ export default function ShipmentForm({ onSuccess }: ShipmentFormProps) {
             resetForm();
             if (onSuccess) onSuccess(response.id);
         } catch (err: unknown) {
-            setError(err.message || "Failed to create shipment");
+            // Kita cek: "Apakah err ini adalah instance dari Error?"
+            const errorMessage = err instanceof Error ? err.message : "An unexpected error occurred";
+
+            setError(errorMessage);
+            console.error("Error creating shipment:", err);
         } finally {
             setLoading(false);
         }

@@ -101,3 +101,23 @@ export function useRegister() {
 
   return { register, loading, error };
 }
+
+export function useLogout() {
+  const [loading, setLoading] = useState(false);
+
+  const logout = async () => {
+    setLoading(true);
+    try {
+      await logoutApi();
+    } catch {
+      // Even if backend call fails, still clear local token
+      console.warn("Backend logout failed, clearing token locally.");
+    } finally {
+      localStorage.removeItem("token");
+      setLoading(false);
+      window.location.href = "/auth/login";
+    }
+  };
+
+  return { logout, loading };
+}

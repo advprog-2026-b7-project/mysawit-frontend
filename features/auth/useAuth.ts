@@ -46,10 +46,18 @@ export function useAuth() {
     void loadCurrentUser();
   }, []);
 
-  const logout = () => {
-    localStorage.removeItem("token");
-    window.location.href = "/auth/login";
-  };
+  const logout = async () => {
+    try {
+      await axios.post(`${baseURL}/api/auth/logout`, null, {
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+      });
+    } catch {
+      console.warn("Backend logout failed, clearing token locally.");
+    } finally {
+      localStorage.removeItem("token");
+      window.location.href = "/auth/login";
+    }
+};
 
   return { user, loading, logout };
 }

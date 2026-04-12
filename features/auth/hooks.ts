@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { loginApi, registerApi } from "./api";
+import { loginApi, registerApi, googleLoginApi, logoutApi } from "./api";
 import type { LoginRequest, RegisterRequest } from "./types";
 
 /**
@@ -120,4 +120,50 @@ export function useLogout() {
   };
 
   return { logout, loading };
+}
+
+export function useGoogleLogin() {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const googleLogin = async (idToken: string) => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const res = await googleLoginApi(idToken);
+
+      console.log("GOOGLE LOGIN RESPONSE:", JSON.stringify(res));
+
+      const token = extractToken(res as Record<string, unknown>);
+
+      if (!token) {
+        throw new Error(
+          "No token found in server response. Check backend response format."
+        );
+      }
+
+      localStorage.setItem("token", token);
+
+      // Verify the token was actually persisted
+      const stored = localStorage.getItem("token");
+      console.log("STORED TOKEN:", stored ? stored.substring(0, 20) + "..." : null);
+
+      if (!stored) {
+        throw new Error("Failed to persist token in localStorage.");
+      }
+
+      window.location.href = "/dashboard";
+    } catch (err: unknown) {
+      const axiosErr = err as { response?: { data?: { message?: string } } };
+      setError(
+        axiosErr?.response?.data?.message ||
+          (err instanceof Error ? err.message : "Google login failed")
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return { googleLogin, loading, error };
 }

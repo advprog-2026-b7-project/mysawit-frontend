@@ -2,10 +2,12 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useLogin } from "../hooks";
+import { useLogin, useGoogleLogin } from "../hooks";
+import { GoogleLogin } from "@react-oauth/google";
 
 export default function LoginForm() {
   const { login, loading, error } = useLogin();
+  const { googleLogin, loading: googleLoading, error: googleError } = useGoogleLogin();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -13,6 +15,12 @@ export default function LoginForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     await login({ email, password });
+  };
+
+  const handleGoogleSuccess = async (credentialResponse: any) => {
+    if (credentialResponse.credential) {
+      await googleLogin(credentialResponse.credential);
+    }
   };
 
   return (
@@ -30,6 +38,12 @@ export default function LoginForm() {
         {error && (
           <div className="bg-red-50 border border-red-300 text-red-800 text-sm p-3 rounded mb-4">
             {error}
+          </div>
+        )}
+
+        {googleError && (
+          <div className="bg-red-50 border border-red-300 text-red-800 text-sm p-3 rounded mb-4">
+            {googleError}
           </div>
         )}
 
@@ -70,13 +84,28 @@ export default function LoginForm() {
           </div>
 
           <button
-            disabled={loading}
-            className="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-2 rounded-md transition"
+            disabled={loading || googleLoading}
+            className="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-2 rounded-md transition disabled:bg-gray-400"
           >
             {loading ? "Signing In..." : "Sign In"}
           </button>
 
         </form>
+
+        <div className="mt-6 flex items-center">
+          <div className="flex-1 border-t border-gray-300"></div>
+          <span className="px-3 text-sm text-gray-600">Or continue with</span>
+          <div className="flex-1 border-t border-gray-300"></div>
+        </div>
+
+        <div className="mt-4 flex justify-center">
+          <GoogleLogin
+            onSuccess={handleGoogleSuccess}
+            onError={() => console.log("Login failed")}
+            size="large"
+            width="100%"
+          />
+        </div>
 
         <p className="text-center text-sm text-gray-700 mt-6">
           Don’t have an account?{" "}

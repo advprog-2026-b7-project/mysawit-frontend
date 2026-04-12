@@ -11,6 +11,11 @@ export const registerApi = async (data: RegisterRequest) => {
   return res.data;
 };
 
+export const googleLoginApi = async (idToken: string) => {
+  const res = await authClient.post("/api/auth/google-login", { idToken });
+  return res.data;
+};
+
 export const logoutApi = async () => {
   const res = await authClient.post("/api/auth/logout");
   return res.data;

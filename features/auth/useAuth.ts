@@ -13,6 +13,7 @@ interface AuthUser {
 export function useAuth() {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
+  const baseURL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
 
   const loadCurrentUser = async () => {
     const token = localStorage.getItem("token");
@@ -22,7 +23,6 @@ export function useAuth() {
       return;
     }
 
-    const baseURL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
     const url = `${baseURL}/api/auth/me`;
 
     try {

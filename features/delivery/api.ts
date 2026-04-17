@@ -24,4 +24,13 @@ export const deliveryApi = {
         if (!response.ok) throw new Error('Gagal menugaskan supir');
         return response.json();
     },
+    updateStatus: async (id: string, status: string): Promise<Shipment> => {
+        const response = await fetch(`${BASE_URL}/${id}/status`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status }),
+        });
+        if (!response.ok) throw new Error('Gagal mengubah status pengiriman');
+        return response.json();
+    },
 };

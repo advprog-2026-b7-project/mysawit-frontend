@@ -21,5 +21,7 @@ export interface AuthUser {
   id: string;
   email: string;
   username: string;
-  authProvider: string;
+  role: string;
+  mandorCertificationNumber: string;
+  mandorId: string;
 }

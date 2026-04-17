@@ -51,7 +51,10 @@ export default function DashboardPage() {
               <strong>Email:</strong> {user.email}
             </p>
             <p>
-              <strong>Auth Provider:</strong> {user.authProvider}
+              <strong>Username:</strong> {user.username}
+            </p>
+            <p>
+              <strong>Role:</strong> {user.role}
             </p>
           </div>
         </div>

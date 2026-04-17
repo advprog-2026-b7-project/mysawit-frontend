@@ -7,7 +7,9 @@ interface AuthUser {
   id: string;
   username: string;
   email?: string;
-  authProvider?: string;
+  role?: string;
+  mandorCertificationNumber?: string;
+  mandorId?: string;
 }
 
 export function useAuth() {

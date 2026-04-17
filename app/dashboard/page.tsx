@@ -144,6 +144,11 @@ export default function DashboardPage() {
                   description="View and manage all users in the system"
                   onClick={() => router.push("/admin/users")}
                 />
+                <NavCard
+                  title="Assignment Management"
+                  description="Assign and reassign Buruh to Mandor"
+                  onClick={() => router.push("/admin/assignments")}
+                />
               </div>
             </div>
           )}

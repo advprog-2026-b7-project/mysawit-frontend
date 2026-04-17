@@ -1,0 +1,54 @@
+name: Frontend CI
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+
+      - name: Install Dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Linting Check
+        run: pnpm lint
+
+      - name: Type Check (TypeScript)
+        run: pnpm exec tsc --noEmit
+
+      - name: Production Build
+        run: pnpm build
+
+      - name: Cache SonarCloud packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.sonar/cache
+          key: ${{ runner.os }}-sonar
+          restore-keys: ${{ runner.os }}-sonar
+
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarcloud-github-action@v2
+        with:
+         args: >
+          -Dsonar.projectKey=advprog-2026-b7-project_mysawit-frontend
+          -Dsonar.organization=adpro-kelompok-b7
+          -Dsonar.java.binaries=build/classes
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_KEY }}

@@ -7,7 +7,8 @@ export interface RegisterRequest {
   name: string;
   email: string;
   password: string;
-  role: "BURUH" | "MANDOR" | "ADMIN" | "SUPIR";
+  role: "BURUH" | "MANDOR" | "SUPIR";
+  mandorCertificationNumber?: string;
 }
 
 export interface AuthResponse {

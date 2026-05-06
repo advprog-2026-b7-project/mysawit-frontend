@@ -26,7 +26,9 @@ export default function PlantationPage() {
   const [filters, setFilters] = useState<PlantationListFilters>({});
 
   useEffect(() => {
-    if (!authLoading && !authUser) router.push("/auth/login");
+    if (authLoading) return;
+    if (!authUser) { router.push("/auth/login"); return; }
+    if (authUser.role !== "ADMIN") { router.push("/dashboard"); }
   }, [authUser, authLoading, router]);
 
   const fetchList = useCallback(async () => {
@@ -43,7 +45,7 @@ export default function PlantationPage() {
   }, [filters]);
 
   useEffect(() => {
-    if (authUser) fetchList();
+    if (authUser && authUser.role === "ADMIN") fetchList();
   }, [authUser, fetchList]);
 
   const handleSelectPlantation = async (p: PlantationResponse) => {
@@ -66,15 +68,13 @@ export default function PlantationPage() {
     }
   };
 
-  if (authLoading) {
+  if (authLoading || !authUser || authUser.role !== "ADMIN") {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600" />
       </div>
     );
   }
-
-  if (!authUser) return null;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 py-12 px-4">

@@ -1,37 +1,75 @@
 import harvestServiceClient from "@/services/harvestClient";
-import type { HarvestCreateRequest, HarvestResponse } from "./types";
+import { getApiErrorMessage } from "@/lib/apiError";
+import type {
+  ApiSuccessResponse,
+  HarvestCreateRequest,
+  HarvestHistoryFilters,
+  HarvestPageResponse,
+  HarvestResponse,
+} from "./types";
+
+function cleanParams(filters: HarvestHistoryFilters) {
+  return Object.fromEntries(
+    Object.entries(filters).filter(([, value]) => value !== "" && value != null)
+  );
+}
 
 class HarvestClient {
   async submitHarvest(
     request: HarvestCreateRequest,
-    photos?: File[]
+    photos: File[]
   ): Promise<HarvestResponse> {
     const formData = new FormData();
+    formData.append("weightKg", String(request.weightKg));
+    formData.append("notes", request.notes);
 
-    // Add request data as JSON blob
-    const dataBlob = new Blob([JSON.stringify(request)], {
-      type: "application/json",
+    photos.forEach((photo) => {
+      formData.append("photos", photo);
     });
-    formData.append("data", dataBlob);
 
-    // Add photos if provided
-    if (photos && photos.length > 0) {
-      photos.forEach((photo) => {
-        formData.append("photos", photo);
-      });
+    try {
+      const response = await harvestServiceClient.post<HarvestResponse>(
+        "/api/v1/harvests",
+        formData
+      );
+
+      return response.data;
+    } catch (error) {
+      throw new Error(getApiErrorMessage(error));
     }
+  }
 
-    const response = await harvestServiceClient.post<HarvestResponse>(
-      "/harvests",
-      formData,
-      {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      }
-    );
+  async getHarvestHistory(
+    filters: HarvestHistoryFilters
+  ): Promise<HarvestPageResponse> {
+    try {
+      const response = await harvestServiceClient.get<
+        ApiSuccessResponse<HarvestPageResponse>
+      >("/api/v1/harvests", {
+        params: cleanParams(filters),
+      });
 
-    return response.data;
+      return response.data.data;
+    } catch (error) {
+      throw new Error(getApiErrorMessage(error));
+    }
+  }
+
+  async getHarvestHistoryByBuruhId(
+    buruhId: string,
+    filters: HarvestHistoryFilters
+  ): Promise<HarvestPageResponse> {
+    try {
+      const response = await harvestServiceClient.get<
+        ApiSuccessResponse<HarvestPageResponse>
+      >(`/api/v1/users/${buruhId}/harvests`, {
+        params: cleanParams(filters),
+      });
+
+      return response.data.data;
+    } catch (error) {
+      throw new Error(getApiErrorMessage(error));
+    }
   }
 }
 

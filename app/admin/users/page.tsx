@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import UserList from "@/features/profile/components/UserList";
-import { getAllUsersApi } from "@/features/profile/api";
+import { getAllUsersApi, deleteUserApi } from "@/features/profile/api";
 import { useAuth } from "@/features/auth/useAuth";
 import type { UserProfile, GetUsersFiltersRequest } from "@/features/profile/types";
 
@@ -49,6 +49,15 @@ export default function AdminUsersPage() {
 
   const handleFilterChange = (newFilters: GetUsersFiltersRequest) => {
     setFilters(newFilters);
+  };
+
+  const handleDeleteUser = async (user: UserProfile) => {
+    try {
+      await deleteUserApi(user.id);
+      setUsers((prev) => prev.filter((u) => u.id !== user.id));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Gagal menghapus pengguna");
+    }
   };
 
   if (authLoading) {
@@ -98,6 +107,8 @@ export default function AdminUsersPage() {
           isLoading={isLoading}
           onSelectUser={handleSelectUser}
           onFilterChange={handleFilterChange}
+          onDeleteUser={handleDeleteUser}
+          currentUserId={authUser?.id}
         />
 
         {/* Stats */}

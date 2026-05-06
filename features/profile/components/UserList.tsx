@@ -1,33 +1,64 @@
 "use client";
 
 import React, { useState } from "react";
-import type { UserProfile } from "../types";
+import type { GetUsersFiltersRequest, UserProfile } from "../types";
 import Button from "@/components/ui/Button";
 
 interface UserListProps {
   users: UserProfile[];
   isLoading?: boolean;
   onSelectUser?: (user: UserProfile) => void;
-  onFilterChange?: (filters: any) => void;
+  onFilterChange?: (filters: GetUsersFiltersRequest) => void;
+  onDeleteUser?: (user: UserProfile) => void;
+  currentUserId?: string;
 }
+
+type UserFiltersForm = {
+  name: string;
+  email: string;
+  role: "" | UserProfile["role"];
+};
+
+const EMPTY_FILTERS: UserFiltersForm = {
+  name: "",
+  email: "",
+  role: "",
+};
+
+const normalizeFilters = (filters: UserFiltersForm): GetUsersFiltersRequest => {
+  const name = filters.name.trim();
+  const email = filters.email.trim();
+
+  return {
+    ...(name ? { name } : {}),
+    ...(email ? { email } : {}),
+    ...(filters.role ? { role: filters.role } : {}),
+  };
+};
 
 export default function UserList({
   users,
   isLoading = false,
   onSelectUser,
   onFilterChange,
+  onDeleteUser,
+  currentUserId,
 }: UserListProps) {
-  const [filters, setFilters] = useState({
-    name: "",
-    email: "",
-    role: "",
-  });
+  const [filters, setFilters] = useState<UserFiltersForm>(EMPTY_FILTERS);
+  const [confirmDeleteUser, setConfirmDeleteUser] = useState<UserProfile | null>(null);
 
-  const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleFilterChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
     const { name, value } = e.target;
-    const newFilters = { ...filters, [name]: value };
+    const newFilters = { ...filters, [name]: value } as UserFiltersForm;
     setFilters(newFilters);
-    onFilterChange?.(newFilters);
+    onFilterChange?.(normalizeFilters(newFilters));
+  };
+
+  const handleResetFilters = () => {
+    setFilters(EMPTY_FILTERS);
+    onFilterChange?.({});
   };
 
   const getRoleColor = (role: string) => {
@@ -50,7 +81,7 @@ export default function UserList({
       <h2 className="text-2xl font-bold text-gray-800 mb-6">Daftar Pengguna</h2>
 
       {/* Filters */}
-      <div className="grid grid-cols-3 gap-4 mb-6">
+      <div className="grid grid-cols-1 gap-4 mb-4 md:grid-cols-3">
         <input
           type="text"
           name="name"
@@ -79,6 +110,16 @@ export default function UserList({
           <option value="BURUH">Buruh</option>
           <option value="SUPIR">Supir</option>
         </select>
+      </div>
+      <div className="flex items-center justify-end mb-6">
+        <Button
+          type="button"
+          variant="secondary"
+          onClick={handleResetFilters}
+          disabled={!filters.name && !filters.email && !filters.role}
+        >
+          Reset Filter
+        </Button>
       </div>
 
       {/* Users Table */}
@@ -114,13 +155,24 @@ export default function UserList({
                     </span>
                   </td>
                   <td className="px-4 py-3 text-center">
-                    <Button
-                      variant="primary"
-                      onClick={() => onSelectUser?.(user)}
-                      className="px-3 py-1 text-xs"
-                    >
-                      Lihat Detail
-                    </Button>
+                    <div className="flex items-center justify-center gap-2">
+                      <Button
+                        variant="primary"
+                        onClick={() => onSelectUser?.(user)}
+                        className="px-3 py-1 text-xs"
+                      >
+                        Lihat Detail
+                      </Button>
+                      {user.id !== currentUserId && (
+                        <Button
+                          variant="secondary"
+                          onClick={() => setConfirmDeleteUser(user)}
+                          className="px-3 py-1 text-xs !bg-red-100 !text-red-700 hover:!bg-red-200 border-red-300"
+                        >
+                          Hapus
+                        </Button>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -128,6 +180,38 @@ export default function UserList({
           </table>
         )}
       </div>
+
+      {/* Delete Confirmation Modal */}
+      {confirmDeleteUser && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="bg-white rounded-lg shadow-xl p-6 max-w-sm w-full mx-4">
+            <h3 className="text-lg font-bold text-gray-900 mb-2">Hapus Pengguna</h3>
+            <p className="text-gray-600 mb-6">
+              Yakin ingin menghapus pengguna{" "}
+              <span className="font-semibold text-gray-900">{confirmDeleteUser.username}</span>?
+              Tindakan ini tidak dapat dibatalkan.
+            </p>
+            <div className="flex gap-3">
+              <Button
+                variant="secondary"
+                onClick={() => setConfirmDeleteUser(null)}
+                className="flex-1"
+              >
+                Batal
+              </Button>
+              <button
+                onClick={() => {
+                  onDeleteUser?.(confirmDeleteUser);
+                  setConfirmDeleteUser(null);
+                }}
+                className="flex-1 bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-lg transition"
+              >
+                Hapus
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -84,3 +84,7 @@ export const reassignmentApi = async (assignmentId: string, request: Reassignmen
   const res = await authClient.post(`/api/assignments/${assignmentId}/reassign`, request);
   return res.data;
 };
+
+export const deleteUserApi = async (userId: string): Promise<void> => {
+  await authClient.delete(`/api/admin/users/${userId}`);
+};

@@ -4,6 +4,14 @@ import { useEffect, useState } from "react";
 import { getCurrentUserProfileApi, getUserProfileApi } from "./api";
 import type { UserProfile, MeResponse } from "./types";
 
+function toUserProfile(data: MeResponse): UserProfile {
+  return {
+    ...data,
+    mandorCertificationNumber: data.mandorCertificationNumber ?? undefined,
+    mandorId: data.mandorId ?? undefined,
+  };
+}
+
 export const useCurrentUserProfile = () => {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
@@ -14,11 +22,7 @@ export const useCurrentUserProfile = () => {
       try {
         setLoading(true);
         const data: MeResponse = await getCurrentUserProfileApi();
-        setProfile({
-          ...data,
-          mandorCertificationNumber: data.mandorCertificationNumber ?? undefined,
-          mandorId: data.mandorId ?? undefined,
-        });
+        setProfile(toUserProfile(data));
         setError(null);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to fetch profile");
@@ -50,7 +54,7 @@ export const useUserProfile = (userId: string | null) => {
       try {
         setLoading(true);
         const data = await getUserProfileApi(userId);
-        setProfile(data);
+        setProfile(toUserProfile(data));
         setError(null);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to fetch profile");

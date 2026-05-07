@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import UserList from "@/features/profile/components/UserList";
-import { getAllUsersApi } from "@/features/profile/api";
+import { getAllUsersApi, deleteUserApi } from "@/features/profile/api";
 import { useAuth } from "@/features/auth/useAuth";
 import type { UserProfile, GetUsersFiltersRequest } from "@/features/profile/types";
 
@@ -22,18 +22,24 @@ export default function AdminUsersPage() {
     }
   }, [authUser, authLoading, router]);
 
-  // Fetch users
+  // Fetch users (wait for auth to finish loading first)
   useEffect(() => {
+    if (authLoading || !authUser) return;
+
     const fetchUsers = async () => {
       try {
         setIsLoading(true);
         setError(null);
         const data = await getAllUsersApi(filters);
-        // Handle both array and object responses
-        const usersList = Array.isArray(data) ? data : data.data || [];
+        const usersList = Array.isArray(data) ? data : [];
         setUsers(usersList);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Gagal memuat data pengguna");
+        const message = err instanceof Error ? err.message : "Gagal memuat data pengguna";
+        if (message.includes("401") || message.includes("Unauthorized")) {
+          router.push("/auth/login");
+          return;
+        }
+        setError(message);
         setUsers([]);
       } finally {
         setIsLoading(false);
@@ -41,7 +47,7 @@ export default function AdminUsersPage() {
     };
 
     fetchUsers();
-  }, [filters]);
+  }, [filters, authLoading, authUser, router]);
 
   const handleSelectUser = (user: UserProfile) => {
     router.push(`/profile/${user.id}`);
@@ -49,6 +55,15 @@ export default function AdminUsersPage() {
 
   const handleFilterChange = (newFilters: GetUsersFiltersRequest) => {
     setFilters(newFilters);
+  };
+
+  const handleDeleteUser = async (user: UserProfile) => {
+    try {
+      await deleteUserApi(user.id);
+      setUsers((prev) => prev.filter((u) => u.id !== user.id));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Gagal menghapus pengguna");
+    }
   };
 
   if (authLoading) {
@@ -98,6 +113,8 @@ export default function AdminUsersPage() {
           isLoading={isLoading}
           onSelectUser={handleSelectUser}
           onFilterChange={handleFilterChange}
+          onDeleteUser={handleDeleteUser}
+          currentUserId={authUser?.id}
         />
 
         {/* Stats */}

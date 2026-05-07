@@ -2,10 +2,8 @@
 
 import { useState } from "react";
 import { plantationClient } from "@/features/plantation/api";
-import type {
-  PlantationCreateRequest,
-  Coordinate,
-} from "@/features/plantation/types";
+
+type CoordPair = [number, number];
 
 interface PlantationFormProps {
   onSuccess?: (plantationId: string) => void;
@@ -18,18 +16,15 @@ const CORNER_LABELS = [
   "Bottom-Left (SW)",
 ];
 
-const emptyCoordinates = (): Coordinate[] => [
-  { latitude: 0, longitude: 0 },
-  { latitude: 0, longitude: 0 },
-  { latitude: 0, longitude: 0 },
-  { latitude: 0, longitude: 0 },
+const emptyCoordinates = (): CoordPair[] => [
+  [0, 0], [0, 0], [0, 0], [0, 0],
 ];
 
 export default function PlantationForm({ onSuccess }: PlantationFormProps) {
   const [plantationCode, setPlantationCode] = useState("");
   const [plantationName, setPlantationName] = useState("");
   const [areaSize, setAreaSize] = useState("");
-  const [coordinates, setCoordinates] = useState<Coordinate[]>(
+  const [coordinates, setCoordinates] = useState<CoordPair[]>(
     emptyCoordinates()
   );
 
@@ -37,15 +32,14 @@ export default function PlantationForm({ onSuccess }: PlantationFormProps) {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
-  const updateCoordinate = (
-    index: number,
-    field: keyof Coordinate,
-    value: string
-  ) => {
+  const updateCoordinate = (index: number, axisIndex: number, value: string) => {
     setCoordinates((prev) =>
-      prev.map((coord, i) =>
-        i === index ? { ...coord, [field]: value ? parseFloat(value) : 0 } : coord
-      )
+      prev.map((pair, i) => {
+        if (i !== index) return pair;
+        const next: CoordPair = [pair[0], pair[1]];
+        next[axisIndex] = value ? parseInt(value, 10) : 0;
+        return next;
+      })
     );
   };
 
@@ -76,17 +70,15 @@ export default function PlantationForm({ onSuccess }: PlantationFormProps) {
       return;
     }
 
-    const payload: PlantationCreateRequest = {
-      plantationCode: plantationCode.trim(),
-      plantationName: plantationName.trim(),
-      areaSize: parseFloat(areaSize),
-      coordinates,
-    };
-
     setLoading(true);
 
     try {
-      const response = await plantationClient.createPlantation(payload);
+      const response = await plantationClient.createPlantation({
+        name: plantationName.trim(),
+        code: plantationCode.trim(),
+        area: parseFloat(areaSize),
+        coordinates,
+      });
       const createdId = response.id || "(ID unavailable)";
       setSuccess(`Plantation created successfully! ID: ${createdId}`);
       resetForm();
@@ -180,7 +172,7 @@ export default function PlantationForm({ onSuccess }: PlantationFormProps) {
             </label>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {coordinates.map((coord, index) => (
+              {coordinates.map((pair, index) => (
                 <div
                   key={index}
                   className="border border-gray-200 rounded-md p-3 bg-gray-50"
@@ -190,23 +182,19 @@ export default function PlantationForm({ onSuccess }: PlantationFormProps) {
                   </p>
                   <input
                     type="number"
-                    step="any"
-                    value={coord.latitude || ""}
-                    onChange={(e) =>
-                      updateCoordinate(index, "latitude", e.target.value)
-                    }
-                    placeholder="Latitude"
+                    step="1"
+                    value={pair[0] || ""}
+                    onChange={(e) => updateCoordinate(index, 0, e.target.value)}
+                    placeholder="X coordinate (integer)"
                     className={inputClass + " text-sm mb-2"}
                     required
                   />
                   <input
                     type="number"
-                    step="any"
-                    value={coord.longitude || ""}
-                    onChange={(e) =>
-                      updateCoordinate(index, "longitude", e.target.value)
-                    }
-                    placeholder="Longitude"
+                    step="1"
+                    value={pair[1] || ""}
+                    onChange={(e) => updateCoordinate(index, 1, e.target.value)}
+                    placeholder="Y coordinate (integer)"
                     className={inputClass + " text-sm"}
                     required
                   />

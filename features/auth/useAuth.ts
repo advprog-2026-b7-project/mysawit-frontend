@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import axios from "axios";
 
 interface AuthUser {
@@ -15,7 +15,7 @@ export function useAuth() {
   const [loading, setLoading] = useState(true);
   const baseURL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
 
-  const loadCurrentUser = async () => {
+  const loadCurrentUser = useCallback(async () => {
     const token = localStorage.getItem("token");
 
     if (!token) {
@@ -40,11 +40,11 @@ export function useAuth() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [baseURL]);
 
   useEffect(() => {
     void loadCurrentUser();
-  }, []);
+  }, [loadCurrentUser]);
 
   const logout = async () => {
     try {

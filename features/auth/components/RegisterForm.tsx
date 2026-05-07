@@ -4,9 +4,9 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRegister } from "../hooks";
 
-type UserRole = "BURUH" | "MANDOR" | "ADMIN" | "SUPIR";
+type UserRole = "BURUH" | "MANDOR" | "SUPIR";
 
-const USER_ROLES: UserRole[] = ["BURUH", "MANDOR", "ADMIN", "SUPIR"];
+const USER_ROLES: UserRole[] = ["BURUH", "MANDOR", "SUPIR"];
 
 function isUserRole(value: string): value is UserRole {
   return USER_ROLES.includes(value as UserRole);
@@ -20,6 +20,7 @@ export default function RegisterForm() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [role, setRole] = useState<UserRole>("BURUH");
+  const [certificationNumber, setCertificationNumber] = useState("");
   const [validationError, setValidationError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -37,7 +38,18 @@ export default function RegisterForm() {
       return;
     }
 
-    await register({ name, email, password, role });
+    if (role === "MANDOR" && !certificationNumber.trim()) {
+      setValidationError("Mandor must provide a certification number");
+      return;
+    }
+
+    await register({
+      name,
+      email,
+      password,
+      role,
+      ...(role === "MANDOR" ? { mandorCertificationNumber: certificationNumber.trim() } : {}),
+    });
   };
 
   const displayError = validationError || error;
@@ -151,9 +163,27 @@ export default function RegisterForm() {
               <option value="BURUH">Buruh</option>
               <option value="MANDOR">Mandor</option>
               <option value="SUPIR">Supir</option>
-              <option value="ADMIN">Admin</option>
             </select>
           </div>
+
+          {role === "MANDOR" && (
+            <div>
+              <label className="text-sm font-semibold text-gray-900">
+                Certification Number
+              </label>
+
+              <input
+                type="text"
+                placeholder="Enter your mandor certification number"
+                className="w-full border border-gray-300 rounded-md px-3 py-2 mt-1
+                text-gray-900 placeholder-gray-400
+                focus:ring-2 focus:ring-green-500 focus:outline-none"
+                value={certificationNumber}
+                onChange={(e) => setCertificationNumber(e.target.value)}
+                required
+              />
+            </div>
+          )}
 
           <button
             disabled={loading}

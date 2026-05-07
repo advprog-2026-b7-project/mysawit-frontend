@@ -1,66 +1,50 @@
-export type Coordinate = [number, number];
-
-export interface PlantationCreateRequest {
-  name: string;
-  code: string;
-  area: number;
-  coordinates: Coordinate[];
+export interface Coordinate {
+	latitude: number;
+	longitude: number;
 }
 
-export interface PlantationUpdateRequest {
-  name?: string;
-  area?: number;
-  coordinates?: Coordinate[];
+export interface PlantationCreateRequest {
+	name: string;
+	code: string;
+	area: number;
+	coordinates: number[][];
 }
 
 export interface MandorSummary {
-  id: string;
-  name: string;
-  certificationNumber?: string | null;
+	id: string;
+	name: string;
+	certificationNumber?: string;
 }
 
 export interface DriverSummary {
-  id: string;
-  name: string;
+	id: string;
+	name: string;
 }
 
 export interface PlantationResponse {
-  id: string;
-  name: string;
-  code: string;
-  area: number;
-  coordinates: Coordinate[];
-  mandor?: MandorSummary | null;
-  createdAt?: string;
+	id: string;
+	name: string;
+	code: string;
+	area: number;
+	coordinates: number[][];
+	mandor?: MandorSummary | null;
+	createdAt?: string;
 }
 
-export interface PlantationUpdateResponse {
-  id: string;
-  name: string;
-  code: string;
-  area: number;
-  coordinates: Coordinate[];
-  updatedAt?: string;
+export interface PlantationDetailResponse extends PlantationResponse {
+	drivers: DriverSummary[];
+	updatedAt?: string;
 }
 
-export interface MandorAssignmentResponse {
-  plantationId: string;
-  mandor: MandorSummary;
-  assignedAt: string;
+export interface PlantationListFilters {
+	name?: string;
+	code?: string;
 }
 
-export interface DriverAssignmentResponse {
-  plantationId: string;
-  driver: DriverSummary;
-  assignedAt: string;
+export interface AssignMandorRequest {
+	mandorId: string;
 }
 
-export interface ApiSuccessResponse<T> {
-  status: "success";
-  data: T;
-}
-
-export interface ApiSuccessMessageResponse {
-  status: "success";
-  message: string;
+export interface AssignDriverRequest {
+	driverId: string;
 }

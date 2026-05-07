@@ -1,87 +1,100 @@
+import axios from "axios";
 import plantationServiceClient from "@/services/plantationClient";
-import { getApiErrorMessage } from "@/lib/apiError";
 import type {
-  ApiSuccessMessageResponse,
-  ApiSuccessResponse,
-  DriverAssignmentResponse,
-  MandorAssignmentResponse,
-  PlantationCreateRequest,
-  PlantationResponse,
-  PlantationUpdateRequest,
-  PlantationUpdateResponse,
+	AssignDriverRequest,
+	AssignMandorRequest,
+	PlantationCreateRequest,
+	PlantationDetailResponse,
+	PlantationListFilters,
+	PlantationResponse,
 } from "./types";
 
+interface ApiSuccessResponse<T> {
+	status: string;
+	data: T;
+}
+
+function extractErrorMessage(err: unknown): string {
+	if (axios.isAxiosError(err)) {
+		const serverMsg =
+			err.response?.data?.message ||
+			(Array.isArray(err.response?.data?.details) && err.response?.data?.details[0]?.detail) ||
+			err.response?.data?.error;
+		if (serverMsg) return serverMsg;
+		return `Server error ${err.response?.status ?? "unknown"}: ${err.message}`;
+	}
+	return err instanceof Error ? err.message : "Unknown error";
+}
+
 class PlantationClient {
-  async createPlantation(
-    request: PlantationCreateRequest
-  ): Promise<PlantationResponse> {
-    try {
-      const response = await plantationServiceClient.post<
-        ApiSuccessResponse<PlantationResponse>
-      >("/api/v1/plantations", request);
+	async getAll(filters?: PlantationListFilters): Promise<PlantationResponse[]> {
+		const params = new URLSearchParams();
+		if (filters?.name) params.append("name", filters.name);
+		if (filters?.code) params.append("code", filters.code);
+		const qs = params.toString();
+		const url = qs ? `/api/v1/plantations?${qs}` : "/api/v1/plantations";
+		try {
+			const response = await plantationServiceClient.get<ApiSuccessResponse<PlantationResponse[]>>(url);
+			return response.data.data;
+		} catch (err) {
+			throw new Error(extractErrorMessage(err));
+		}
+	}
 
-      return response.data.data;
-    } catch (error) {
-      throw new Error(getApiErrorMessage(error));
-    }
-  }
+	async getById(id: string): Promise<PlantationDetailResponse> {
+		try {
+			const response = await plantationServiceClient.get<ApiSuccessResponse<PlantationDetailResponse>>(
+				`/api/v1/plantations/${id}`
+			);
+			return response.data.data;
+		} catch (err) {
+			throw new Error(extractErrorMessage(err));
+		}
+	}
 
-  async updatePlantation(
-    plantationId: string,
-    request: PlantationUpdateRequest
-  ): Promise<PlantationUpdateResponse> {
-    try {
-      const response = await plantationServiceClient.put<
-        ApiSuccessResponse<PlantationUpdateResponse>
-      >(`/api/v1/plantations/${plantationId}`, request);
+	async createPlantation(request: PlantationCreateRequest): Promise<PlantationResponse> {
+		try {
+			const response = await plantationServiceClient.post<ApiSuccessResponse<PlantationResponse>>(
+				"/api/v1/plantations",
+				request
+			);
+			return response.data.data;
+		} catch (err) {
+			throw new Error(extractErrorMessage(err));
+		}
+	}
 
-      return response.data.data;
-    } catch (error) {
-      throw new Error(getApiErrorMessage(error));
-    }
-  }
+	async assignMandor(plantationId: string, request: AssignMandorRequest): Promise<void> {
+		try {
+			await plantationServiceClient.post(`/api/v1/plantations/${plantationId}/mandor`, request);
+		} catch (err) {
+			throw new Error(extractErrorMessage(err));
+		}
+	}
 
-  async deletePlantation(plantationId: string): Promise<string> {
-    try {
-      const response = await plantationServiceClient.delete<ApiSuccessMessageResponse>(
-        `/api/v1/plantations/${plantationId}`
-      );
+	async unassignMandor(plantationId: string): Promise<void> {
+		try {
+			await plantationServiceClient.delete(`/api/v1/plantations/${plantationId}/mandor`);
+		} catch (err) {
+			throw new Error(extractErrorMessage(err));
+		}
+	}
 
-      return response.data.message;
-    } catch (error) {
-      throw new Error(getApiErrorMessage(error));
-    }
-  }
+	async assignDriver(plantationId: string, request: AssignDriverRequest): Promise<void> {
+		try {
+			await plantationServiceClient.post(`/api/v1/plantations/${plantationId}/drivers`, request);
+		} catch (err) {
+			throw new Error(extractErrorMessage(err));
+		}
+	}
 
-  async assignMandor(
-    plantationId: string,
-    mandorId: string
-  ): Promise<MandorAssignmentResponse> {
-    try {
-      const response = await plantationServiceClient.post<
-        ApiSuccessResponse<MandorAssignmentResponse>
-      >(`/api/v1/plantations/${plantationId}/mandor`, { mandorId });
-
-      return response.data.data;
-    } catch (error) {
-      throw new Error(getApiErrorMessage(error));
-    }
-  }
-
-  async assignDriver(
-    plantationId: string,
-    driverId: string
-  ): Promise<DriverAssignmentResponse> {
-    try {
-      const response = await plantationServiceClient.post<
-        ApiSuccessResponse<DriverAssignmentResponse>
-      >(`/api/v1/plantations/${plantationId}/drivers`, { driverId });
-
-      return response.data.data;
-    } catch (error) {
-      throw new Error(getApiErrorMessage(error));
-    }
-  }
+	async unassignDriver(plantationId: string, driverId: string): Promise<void> {
+		try {
+			await plantationServiceClient.delete(`/api/v1/plantations/${plantationId}/drivers/${driverId}`);
+		} catch (err) {
+			throw new Error(extractErrorMessage(err));
+		}
+	}
 }
 
 export const plantationClient = new PlantationClient();

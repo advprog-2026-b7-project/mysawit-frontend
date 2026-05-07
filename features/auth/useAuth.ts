@@ -7,7 +7,9 @@ interface AuthUser {
   id: string;
   username: string;
   email?: string;
-  authProvider?: string;
+  role?: string;
+  mandorCertificationNumber?: string;
+  mandorId?: string;
 }
 
 export function useAuth() {
@@ -47,17 +49,20 @@ export function useAuth() {
   }, [loadCurrentUser]);
 
   const logout = async () => {
+    const token = localStorage.getItem("token") ?? "";
     try {
-      await axios.post(`${baseURL}/api/auth/logout`, null, {
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-      });
+      await axios.post(
+        `${baseURL}/api/auth/logout`,
+        { token },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
     } catch {
       console.warn("Backend logout failed, clearing token locally.");
     } finally {
       localStorage.removeItem("token");
       window.location.href = "/auth/login";
     }
-};
+  };
 
   return { user, loading, logout };
 }

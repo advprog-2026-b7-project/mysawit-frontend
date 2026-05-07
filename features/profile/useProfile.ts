@@ -14,7 +14,11 @@ export const useCurrentUserProfile = () => {
       try {
         setLoading(true);
         const data: MeResponse = await getCurrentUserProfileApi();
-        setProfile(data);
+        setProfile({
+          ...data,
+          mandorCertificationNumber: data.mandorCertificationNumber ?? undefined,
+          mandorId: data.mandorId ?? undefined,
+        });
         setError(null);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to fetch profile");

@@ -37,7 +37,7 @@ export default function PlantationForm({ onSuccess }: PlantationFormProps) {
       prev.map((pair, i) => {
         if (i !== index) return pair;
         const next: CoordPair = [pair[0], pair[1]];
-        next[axisIndex] = value ? parseFloat(value) : 0;
+        next[axisIndex] = value ? parseInt(value, 10) : 0;
         return next;
       })
     );
@@ -182,19 +182,19 @@ export default function PlantationForm({ onSuccess }: PlantationFormProps) {
                   </p>
                   <input
                     type="number"
-                    step="any"
+                    step="1"
                     value={pair[0] || ""}
                     onChange={(e) => updateCoordinate(index, 0, e.target.value)}
-                    placeholder="Latitude"
+                    placeholder="X coordinate (integer)"
                     className={inputClass + " text-sm mb-2"}
                     required
                   />
                   <input
                     type="number"
-                    step="any"
+                    step="1"
                     value={pair[1] || ""}
                     onChange={(e) => updateCoordinate(index, 1, e.target.value)}
-                    placeholder="Longitude"
+                    placeholder="Y coordinate (integer)"
                     className={inputClass + " text-sm"}
                     required
                   />

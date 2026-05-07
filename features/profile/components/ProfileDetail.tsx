@@ -149,13 +149,13 @@ export default function ProfileDetail({
               <div>
                 <label className="text-sm text-gray-600 font-medium">Dibuat pada</label>
                 <p className="text-gray-900">
-                  {new Date(profile.createdAt).toLocaleString("id-ID")}
+                  {profile.createdAt ? new Date(profile.createdAt).toLocaleString("id-ID") : "-"}
                 </p>
               </div>
               <div>
                 <label className="text-sm text-gray-600 font-medium">Diperbarui pada</label>
                 <p className="text-gray-900">
-                  {new Date(profile.updatedAt).toLocaleString("id-ID")}
+                  {profile.updatedAt ? new Date(profile.updatedAt).toLocaleString("id-ID") : "-"}
                 </p>
               </div>
             </div>

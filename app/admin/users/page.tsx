@@ -22,18 +22,24 @@ export default function AdminUsersPage() {
     }
   }, [authUser, authLoading, router]);
 
-  // Fetch users
+  // Fetch users (wait for auth to finish loading first)
   useEffect(() => {
+    if (authLoading || !authUser) return;
+
     const fetchUsers = async () => {
       try {
         setIsLoading(true);
         setError(null);
         const data = await getAllUsersApi(filters);
-        // Handle both array and object responses
-        const usersList = Array.isArray(data) ? data : data.data || [];
+        const usersList = Array.isArray(data) ? data : [];
         setUsers(usersList);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Gagal memuat data pengguna");
+        const message = err instanceof Error ? err.message : "Gagal memuat data pengguna";
+        if (message.includes("401") || message.includes("Unauthorized")) {
+          router.push("/auth/login");
+          return;
+        }
+        setError(message);
         setUsers([]);
       } finally {
         setIsLoading(false);
@@ -41,7 +47,7 @@ export default function AdminUsersPage() {
     };
 
     fetchUsers();
-  }, [filters]);
+  }, [filters, authLoading, authUser, router]);
 
   const handleSelectUser = (user: UserProfile) => {
     router.push(`/profile/${user.id}`);

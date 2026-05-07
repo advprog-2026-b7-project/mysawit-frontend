@@ -27,8 +27,10 @@ export default function AdminAssignmentsPage() {
     }
   }, [authUser, authLoading, router]);
 
-  // Load Buruh and Mandor users
+  // Load Buruh and Mandor users (wait for auth to finish loading first)
   useEffect(() => {
+    if (authLoading || !authUser) return;
+
     const loadUsers = async () => {
       setLoading(true);
       setError(null);
@@ -37,11 +39,15 @@ export default function AdminAssignmentsPage() {
           getUsersByRoleApi("BURUH"),
           getUsersByRoleApi("MANDOR"),
         ]);
-        setBuruhList(Array.isArray(buruh) ? buruh : buruh.data || []);
-        setMandorList(Array.isArray(mandor) ? mandor : mandor.data || []);
+        setBuruhList(Array.isArray(buruh) ? buruh : []);
+        setMandorList(Array.isArray(mandor) ? mandor : []);
       } catch (err) {
         const message =
           err instanceof Error ? err.message : "Gagal memuat data pengguna";
+        if (message.includes("401") || message.includes("Unauthorized")) {
+          router.push("/auth/login");
+          return;
+        }
         setError(message);
       } finally {
         setLoading(false);
@@ -49,7 +55,7 @@ export default function AdminAssignmentsPage() {
     };
 
     loadUsers();
-  }, []);
+  }, [authLoading, authUser, router]);
 
   const handleOpenAssignmentModal = (buruh: UserProfile) => {
     setSelectedBuruh(buruh);

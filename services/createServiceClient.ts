@@ -24,9 +24,18 @@ export function createServiceClient(baseURL: string): AxiosInstance {
     }
 
     if (typeof window !== "undefined") {
-      const token = localStorage.getItem("token");
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
+      const url = config.url ?? "";
+      const isPublicEndpoint =
+        url.includes("/api/auth/register") ||
+        url.includes("/api/auth/login") ||
+        url.includes("/api/auth/google-login") ||
+        url.includes("/api/auth/logout");
+
+      if (!isPublicEndpoint) {
+        const token = localStorage.getItem("token");
+        if (token) {
+          config.headers.Authorization = `Bearer ${token}`;
+        }
       }
     }
     return config;

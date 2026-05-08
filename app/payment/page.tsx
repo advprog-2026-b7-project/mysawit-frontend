@@ -1,9 +1,34 @@
-import PayrollTable from '@/features/payment/components/PayrollTable';
+"use client";
+import React, { useEffect, useState } from "react";
+import { getPayrolls } from "@/features/payment/api";
+import PayrollTable from "@/features/payment/components/PayrollTable";
+import { Payroll } from "@/features/payment/types";
 
 export default function PaymentPage() {
+    const [payrolls, setPayrolls] = useState<Payroll[]>([]);
+
+    const loadData = async () => {
+        try {
+            const data = await getPayrolls();
+            if (data) {
+                setPayrolls(data);
+            }
+        } catch (err) {
+            console.error("Failed to load data:", err);
+        }
+    };
+
+    useEffect(() => {
+        loadData();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    const handleRefresh = () => {
+        loadData().catch(console.error);
+    };
+
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6 md:p-12 transition-colors duration-300">
-            {}
             <div className="mx-auto max-w-7xl">
                 <header className="mb-10 border-b border-green-200 dark:border-green-800 pb-6">
                     <h1 className="text-4xl font-black text-green-800 dark:text-green-400 tracking-tight">
@@ -22,7 +47,7 @@ export default function PaymentPage() {
                         </div>
                     </div>
 
-                    <PayrollTable />
+                    <PayrollTable data={payrolls} onRefresh={handleRefresh} />
                 </div>
             </div>
         </div>

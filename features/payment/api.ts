@@ -1,7 +1,6 @@
 import paymentClient from "@/services/paymentClient";
 import { Payroll } from "./types";
 
-// Fungsi untuk mengambil semua data payroll dari database
 export const getPayrolls = async (): Promise<Payroll[]> => {
     try {
         const response = await paymentClient.get('/api/payroll/list');
@@ -12,7 +11,14 @@ export const getPayrolls = async (): Promise<Payroll[]> => {
     }
 };
 
-// (Opsional) Fungsi jika kamu ingin menambah pemicu bayar dari frontend nanti
+export const approvePayroll = async (id: string) => {
+    return await paymentClient.put(`/api/payroll/${id}/approve`);
+};
+
+export const rejectPayroll = async (id: string, reason: string) => {
+    return await paymentClient.put(`/api/payroll/${id}/reject`, { reason });
+};
+
 export const triggerPayment = async (workerId: string, amount: number) => {
     try {
         const response = await paymentClient.get('/test/pay', {

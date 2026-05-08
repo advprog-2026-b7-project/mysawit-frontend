@@ -2,11 +2,11 @@
 
 import { useState } from "react";
 import { deliveryApi } from "@/features/delivery/api";
-import type { CreateShipmentRequest } from "@/features/delivery/types";
 import styles from "./ShipmentForm.module.css";
+import type { CreateShipmentRequest, Shipment } from "@/features/delivery/types";
 
 interface ShipmentFormProps {
-    onSuccess?: (shipmentId: string) => void;
+    onSuccess?: (shipment: Shipment) => void;
 }
 
 const initialFormState: CreateShipmentRequest = {
@@ -45,7 +45,7 @@ export default function ShipmentForm({ onSuccess }: ShipmentFormProps) {
             const response = await deliveryApi.createShipment(formData);
             setSuccess(`Shipment created! ID: ${response.id}`);
             resetForm();
-            if (onSuccess) onSuccess(response.id);
+            if (onSuccess) onSuccess(response); // Kirim full object
         } catch (err: unknown) {
             // Kita cek: "Apakah err ini adalah instance dari Error?"
             const errorMessage = err instanceof Error ? err.message : "An unexpected error occurred";

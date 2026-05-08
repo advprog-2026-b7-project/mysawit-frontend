@@ -4,7 +4,8 @@ export interface Shipment {
     mandorId: string;
     driverId?: string; // Tanda tanya karena bisa null
     totalWeightKg: number;
-    status: 'MEMUAT' | 'DALAM_PERJALANAN' | 'SELESAI' | 'DITOLAK';
+    status: 'MEMUAT' | 'MENGIRIM' | 'TIBA_DI_TUJUAN' | 'DISETUJUI_PARSIAL' |
+        'DISETUJUI_MANDOR' | 'DITOLAK_MANDOR' | 'DISETUJUI_ADMIN' | 'DITOLAK_ADMIN';
     rejectedReason?: string;
     createdAt: string;
     updatedAt: string;

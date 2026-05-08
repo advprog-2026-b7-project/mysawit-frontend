@@ -1,0 +1,20 @@
+
+> mysawit-frontend@0.1.0 dev
+> next dev
+
+▲ Next.js 16.1.6 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://192.168.56.1:3000
+- Environments: .env.local
+
+✓ Starting...
+Creating turbopack project {
+  dir: 'D:\\materi kuliah\\semester 4\\adpro\\Group Project\\mysawit-frontend',
+  testMode: true
+}
+✓ Ready in 906ms
+ POST /api/plantation/api/v1/plantations 201 in 1189ms (compile: 1089ms, render: 100ms)
+ GET /plantation 200 in 2.0s (compile: 1833ms, render: 206ms)
+ POST /api/plantation/api/v1/plantations 502 in 41ms (compile: 11ms, render: 30ms)
+ GET /plantation 200 in 68ms (compile: 5ms, render: 62ms)
+[?25h

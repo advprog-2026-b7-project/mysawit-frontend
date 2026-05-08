@@ -1,0 +1,63 @@
+Error: Can't resolve 'tailwindcss' in 'D:\materi kuliah\semester 4\adpro\Group Project'
+    [2m[at finishWithoutResolve (D:\materi kuliah\semester 4\adpro\Group Project\mysawit-frontend\node_modules\enhanced-resolve\lib\Resolver.js:586:18)][0m
+    [2m[at D:\materi kuliah\semester 4\adpro\Group Project\mysawit-frontend\node_modules\enhanced-resolve\lib\Resolver.js:678:14][0m
+    [2m[at D:\materi kuliah\semester 4\adpro\Group Project\mysawit-frontend\node_modules\enhanced-resolve\lib\Resolver.js:739:5][0m
+    [2m[at eval (eval at create (D:\materi kuliah\semester 4\adpro\Group Project\mysawit-frontend\node_modules\tapable\lib\HookCodeFactory.js:31:10), <anonymous>:15:1)][0m
+    [2m[at D:\materi kuliah\semester 4\adpro\Group Project\mysawit-frontend\node_modules\enhanced-resolve\lib\Resolver.js:739:5][0m
+    [2m[at eval (eval at create (D:\materi kuliah\semester 4\adpro\Group Project\mysawit-frontend\node_modules\tapable\lib\HookCodeFactory.js:31:10), <anonymous>:27:1)][0m
+    [2m[at D:\materi kuliah\semester 4\adpro\Group Project\mysawit-frontend\node_modules\enhanced-resolve\lib\DescriptionFilePlugin.js:89:43][0m
+    [2m[at D:\materi kuliah\semester 4\adpro\Group Project\mysawit-frontend\node_modules\enhanced-resolve\lib\Resolver.js:739:5][0m
+    [2m[at eval (eval at create (D:\materi kuliah\semester 4\adpro\Group Project\mysawit-frontend\node_modules\tapable\lib\HookCodeFactory.js:31:10), <anonymous>:15:1)][0m
+    [2m[at D:\materi kuliah\semester 4\adpro\Group Project\mysawit-frontend\node_modules\enhanced-resolve\lib\Resolver.js:739:5][0m {
+  details: "resolve 'tailwindcss' in 'D:\\materi kuliah\\semester 4\\adpro\\Group Project'\n" +
+    '  Parsed request is a module\n' +
+    '  using description file: D:\\materi kuliah\\semester 4\\adpro\\Group Project\\package.json (relative path: .)\n' +
+    '    resolve as module\n' +
+    "      D:\\materi kuliah\\semester 4\\adpro\\Group Project\\node_modules doesn't exist or is not a directory\n" +
+    "      D:\\materi kuliah\\semester 4\\adpro\\node_modules doesn't exist or is not a directory\n" +
+    "      D:\\materi kuliah\\semester 4\\node_modules doesn't exist or is not a directory\n" +
+    "      D:\\materi kuliah\\node_modules doesn't exist or is not a directory\n" +
+    "      D:\\node_modules doesn't exist or is not a directory"
+}
+Error: Can't resolve 'tailwindcss' in 'D:\materi kuliah\semester 4\adpro\Group Project'
+    [2m[at finishWithoutResolve (D:\materi kuliah\semester 4\adpro\Group Project\mysawit-frontend\node_modules\enhanced-resolve\lib\Resolver.js:586:18)][0m
+    [2m[at D:\materi kuliah\semester 4\adpro\Group Project\mysawit-frontend\node_modules\enhanced-resolve\lib\Resolver.js:678:14][0m
+    [2m[at D:\materi kuliah\semester 4\adpro\Group Project\mysawit-frontend\node_modules\enhanced-resolve\lib\Resolver.js:739:5][0m
+    [2m[at eval (eval at create (D:\materi kuliah\semester 4\adpro\Group Project\mysawit-frontend\node_modules\tapable\lib\HookCodeFactory.js:31:10), <anonymous>:15:1)][0m
+    [2m[at D:\materi kuliah\semester 4\adpro\Group Project\mysawit-frontend\node_modules\enhanced-resolve\lib\Resolver.js:739:5][0m
+    [2m[at eval (eval at create (D:\materi kuliah\semester 4\adpro\Group Project\mysawit-frontend\node_modules\tapable\lib\HookCodeFactory.js:31:10), <anonymous>:27:1)][0m
+    [2m[at D:\materi kuliah\semester 4\adpro\Group Project\mysawit-frontend\node_modules\enhanced-resolve\lib\DescriptionFilePlugin.js:89:43][0m
+    [2m[at D:\materi kuliah\semester 4\adpro\Group Project\mysawit-frontend\node_modules\enhanced-resolve\lib\Resolver.js:739:5][0m
+    [2m[at eval (eval at create (D:\materi kuliah\semester 4\adpro\Group Project\mysawit-frontend\node_modules\tapable\lib\HookCodeFactory.js:31:10), <anonymous>:15:1)][0m
+    [2m[at D:\materi kuliah\semester 4\adpro\Group Project\mysawit-frontend\node_modules\enhanced-resolve\lib\Resolver.js:739:5][0m {
+  details: "resolve 'tailwindcss' in 'D:\\materi kuliah\\semester 4\\adpro\\Group Project'\n" +
+    '  Parsed request is a module\n' +
+    '  using description file: D:\\materi kuliah\\semester 4\\adpro\\Group Project\\package.json (relative path: .)\n' +
+    '    resolve as module\n' +
+    "      D:\\materi kuliah\\semester 4\\adpro\\Group Project\\node_modules doesn't exist or is not a directory\n" +
+    "      D:\\materi kuliah\\semester 4\\adpro\\node_modules doesn't exist or is not a directory\n" +
+    "      D:\\materi kuliah\\semester 4\\node_modules doesn't exist or is not a directory\n" +
+    "      D:\\materi kuliah\\node_modules doesn't exist or is not a directory\n" +
+    "      D:\\node_modules doesn't exist or is not a directory"
+}
+Error: Can't resolve 'tailwindcss' in 'D:\materi kuliah\semester 4\adpro\Group Project'
+    [2m[at finishWithoutResolve (D:\materi kuliah\semester 4\adpro\Group Project\mysawit-frontend\node_modules\enhanced-resolve\lib\Resolver.js:586:18)][0m
+    [2m[at D:\materi kuliah\semester 4\adpro\Group Project\mysawit-frontend\node_modules\enhanced-resolve\lib\Resolver.js:678:14][0m
+    [2m[at D:\materi kuliah\semester 4\adpro\Group Project\mysawit-frontend\node_modules\enhanced-resolve\lib\Resolver.js:739:5][0m
+    [2m[at eval (eval at create (D:\materi kuliah\semester 4\adpro\Group Project\mysawit-frontend\node_modules\tapable\lib\HookCodeFactory.js:31:10), <anonymous>:15:1)][0m
+    [2m[at D:\materi kuliah\semester 4\adpro\Group Project\mysawit-frontend\node_modules\enhanced-resolve\lib\Resolver.js:739:5][0m
+    [2m[at eval (eval at create (D:\materi kuliah\semester 4\adpro\Group Project\mysawit-frontend\node_modules\tapable\lib\HookCodeFactory.js:31:10), <anonymous>:27:1)][0m
+    [2m[at D:\materi kuliah\semester 4\adpro\Group Project\mysawit-frontend\node_modules\enhanced-resolve\lib\DescriptionFilePlugin.js:89:43][0m
+    [2m[at D:\materi kuliah\semester 4\adpro\Group Project\mysawit-frontend\node_modules\enhanced-resolve\lib\Resolver.js:739:5][0m
+    [2m[at eval (eval at create (D:\materi kuliah\semester 4\adpro\Group Project\mysawit-frontend\node_modules\tapable\lib\HookCodeFactory.js:31:10), <anonymous>:15:1)][0m
+    [2m[at D:\materi kuliah\semester 4\adpro\Group Project\mysawit-frontend\node_modules\enhanced-resolve\lib\Resolver.js:739:5][0m {
+  details: "resolve 'tailwindcss' in 'D:\\materi kuliah\\semester 4\\adpro\\Group Project'\n" +
+    '  Parsed request is a module\n' +
+    '  using description file: D:\\materi kuliah\\semester 4\\adpro\\Group Project\\package.json (relative path: .)\n' +
+    '    resolve as module\n' +
+    "      D:\\materi kuliah\\semester 4\\adpro\\Group Project\\node_modules doesn't exist or is not a directory\n" +
+    "      D:\\materi kuliah\\semester 4\\adpro\\node_modules doesn't exist or is not a directory\n" +
+    "      D:\\materi kuliah\\semester 4\\node_modules doesn't exist or is not a directory\n" +
+    "      D:\\materi kuliah\\node_modules doesn't exist or is not a directory\n" +
+    "      D:\\node_modules doesn't exist or is not a directory"
+}

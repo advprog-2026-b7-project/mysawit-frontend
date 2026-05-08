@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useLogin, useGoogleLogin } from "../hooks";
-import { GoogleLogin } from "@react-oauth/google";
+import { GoogleLogin, type CredentialResponse } from "@react-oauth/google";
 
 export default function LoginForm() {
   const { login, loading, error } = useLogin();
@@ -17,7 +17,7 @@ export default function LoginForm() {
     await login({ email, password });
   };
 
-  const handleGoogleSuccess = async (credentialResponse: any) => {
+  const handleGoogleSuccess = async (credentialResponse: CredentialResponse) => {
     if (credentialResponse.credential) {
       await googleLogin(credentialResponse.credential);
     }

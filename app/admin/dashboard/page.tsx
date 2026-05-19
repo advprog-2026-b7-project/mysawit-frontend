@@ -12,11 +12,10 @@ import {
 } from "@/components/layout/AdminIcons";
 import {
   getAssignmentCount,
-  getMe,
   getPlantationCount,
   getUsers,
-  type MeResponse,
 } from "@/features/admin/api";
+import { useRoleDashboard } from "@/features/admin/useRoleDashboard";
 
 type StatCard = {
   label: string;
@@ -26,31 +25,14 @@ type StatCard = {
 
 export default function AdminDashboardPage() {
   const router = useRouter();
-  const [user, setUser] = useState<MeResponse | null>(null);
+  const { user, loading: authLoading } = useRoleDashboard("ADMIN");
   const [stats, setStats] = useState({ users: 0, plantations: 0, assignments: 0 });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      router.push("/login");
-      return;
-    }
+    if (!user) return;
 
     async function loadDashboard() {
-      try {
-        const me = await getMe();
-        if (me.role !== "ADMIN") {
-          router.push("/dashboard");
-          return;
-        }
-        setUser(me);
-      } catch {
-        localStorage.removeItem("token");
-        router.push("/login");
-        return;
-      }
-
       try {
         const [usersPage, plantationCount, assignmentCount] = await Promise.all([
           getUsers({ page: 0, size: 1 }).catch(() => null),
@@ -68,7 +50,7 @@ export default function AdminDashboardPage() {
     }
 
     void loadDashboard();
-  }, [router]);
+  }, [user]);
 
   const statCards: StatCard[] = [
     { label: "TOTAL USERS", value: stats.users, Icon: UsersIcon },
@@ -101,7 +83,7 @@ export default function AdminDashboardPage() {
   ];
 
   return (
-    <AdminLayout activePage="Profile">
+    <AdminLayout activePage="Dashboard" currentUser={user}>
       <div className="flex flex-col gap-12">
         <header>
           <p className="text-[18px] font-normal text-[var(--color-text-body)]">
@@ -123,7 +105,7 @@ export default function AdminDashboardPage() {
                   {label}
                 </p>
                 <p className="admin-heading mt-2 text-[32px] font-bold text-[var(--color-text-heading)]">
-                  {loading ? "..." : value}
+                  {loading || authLoading ? "..." : value}
                 </p>
               </div>
               <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-icon-bg)] text-[var(--color-icon-brown)]">

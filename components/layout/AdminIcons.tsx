@@ -24,11 +24,50 @@ export function UsersIcon(props: IconProps) {
   );
 }
 
+export function LayoutDashboardIcon(props: IconProps) {
+  return (
+    <svg {...baseProps} {...props}>
+      <rect width="7" height="9" x="3" y="3" rx="1" />
+      <rect width="7" height="5" x="14" y="3" rx="1" />
+      <rect width="7" height="9" x="14" y="12" rx="1" />
+      <rect width="7" height="5" x="3" y="16" rx="1" />
+    </svg>
+  );
+}
+
 export function LeafIcon(props: IconProps) {
   return (
     <svg {...baseProps} {...props}>
       <path d="M11 20A7 7 0 0 1 4 13c0-5 4-9 11-10 4 3 6 7 5 11a7 7 0 0 1-9 6Z" />
       <path d="M9 15c2-3 5-5 9-7" />
+    </svg>
+  );
+}
+
+export function ClockIcon(props: IconProps) {
+  return (
+    <svg {...baseProps} {...props}>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 7v5l3 2" />
+    </svg>
+  );
+}
+
+export function CheckCircleIcon(props: IconProps) {
+  return (
+    <svg {...baseProps} {...props}>
+      <circle cx="12" cy="12" r="9" />
+      <path d="m9 12 2 2 4-4" />
+    </svg>
+  );
+}
+
+export function XCircleIcon(props: IconProps) {
+  return (
+    <svg {...baseProps} {...props}>
+      <circle cx="12" cy="12" r="9" />
+      <path d="m15 9-6 6" />
+      <path d="m9 9 6 6" />
     </svg>
   );
 }
@@ -41,6 +80,32 @@ export function TruckIcon(props: IconProps) {
       <path d="M19 17h3v-6l-3-4h-5" />
       <circle cx="7.5" cy="17.5" r="2.5" />
       <circle cx="17.5" cy="17.5" r="2.5" />
+    </svg>
+  );
+}
+
+export function HistoryIcon(props: IconProps) {
+  return (
+    <svg {...baseProps} {...props}>
+      <path d="M3 12a9 9 0 1 0 3-6.7" />
+      <path d="M3 3v6h6" />
+      <path d="M12 7v5l4 2" />
+    </svg>
+  );
+}
+
+export function ChevronRightIcon(props: IconProps) {
+  return (
+    <svg {...baseProps} {...props}>
+      <path d="m9 18 6-6-6-6" />
+    </svg>
+  );
+}
+
+export function ChevronLeftIcon(props: IconProps) {
+  return (
+    <svg {...baseProps} {...props}>
+      <path d="m15 18-6-6 6-6" />
     </svg>
   );
 }
@@ -160,4 +225,3 @@ export function HardHatIcon(props: IconProps) {
     </svg>
   );
 }
-

@@ -6,12 +6,21 @@ import type {
 	PlantationCreateRequest,
 	PlantationDetailResponse,
 	PlantationListFilters,
+	PlantationListItem,
 	PlantationResponse,
 } from "./types";
 
 interface ApiSuccessResponse<T> {
 	status: string;
 	data: T;
+}
+
+interface PagedData<T> {
+	content: T[];
+	page: number;
+	size: number;
+	totalElements: number;
+	totalPages: number;
 }
 
 function extractErrorMessage(err: unknown): string {
@@ -27,15 +36,20 @@ function extractErrorMessage(err: unknown): string {
 }
 
 class PlantationClient {
-	async getAll(filters?: PlantationListFilters): Promise<PlantationResponse[]> {
+	async getAll(filters?: PlantationListFilters): Promise<PlantationListItem[]> {
 		const params = new URLSearchParams();
 		if (filters?.name) params.append("name", filters.name);
 		if (filters?.code) params.append("code", filters.code);
 		const qs = params.toString();
 		const url = qs ? `/api/v1/plantations?${qs}` : "/api/v1/plantations";
 		try {
-			const response = await plantationServiceClient.get<ApiSuccessResponse<PlantationResponse[]>>(url);
-			return response.data.data;
+			const response = await plantationServiceClient.get<ApiSuccessResponse<PagedData<PlantationListItem> | PlantationListItem[]>>(url);
+			const data = response.data.data;
+			// Backend returns paginated envelope { content, page, ... }
+			if (data && !Array.isArray(data) && "content" in data) {
+				return data.content;
+			}
+			return data as PlantationListItem[];
 		} catch (err) {
 			throw new Error(extractErrorMessage(err));
 		}

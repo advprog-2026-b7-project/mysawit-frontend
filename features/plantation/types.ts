@@ -31,6 +31,17 @@ export interface PlantationResponse {
 	createdAt?: string;
 }
 
+// Shape returned by GET /api/v1/plantations (list) — flat mandor name, no nested object
+export interface PlantationListItem {
+	id: string;
+	name: string;
+	code: string;
+	area: number;
+	mandorName?: string | null;
+	driverCount?: number;
+	createdAt?: string;
+}
+
 export interface PlantationDetailResponse extends PlantationResponse {
 	drivers: DriverSummary[];
 	updatedAt?: string;

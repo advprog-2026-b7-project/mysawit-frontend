@@ -13,7 +13,7 @@ export function useRoleDashboard(expectedRole: Role) {
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) {
-      router.push("/login");
+      router.push("/auth/login");
       return;
     }
 
@@ -26,8 +26,9 @@ export function useRoleDashboard(expectedRole: Role) {
         }
         setUser(me);
       } catch {
-        localStorage.removeItem("token");
-        router.push("/login");
+        // Network error or expired token — redirect to login but don't wipe the token
+        // in case it's just a transient failure.
+        router.push("/auth/login");
       } finally {
         setLoading(false);
       }

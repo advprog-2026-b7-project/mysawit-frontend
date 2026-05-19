@@ -76,7 +76,7 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
         style={{
           width: "574px",
           flexShrink: 0,
-          backgroundImage: "url('/login-image.png')",
+          backgroundImage: "url('/login-image.jpg')",
           backgroundSize: "cover",
           backgroundPosition: "center",
           minHeight: "100vh",

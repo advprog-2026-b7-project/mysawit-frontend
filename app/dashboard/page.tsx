@@ -5,6 +5,26 @@ import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import Button from "@/components/ui/Button";
 
+function NavCard({
+  title,
+  description,
+  onClick,
+}: {
+  title: string;
+  description?: string;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow text-left hover:bg-gray-50"
+    >
+      <h3 className="font-semibold text-gray-900 text-lg">{title}</h3>
+      {description && <p className="text-sm text-gray-600 mt-1">{description}</p>}
+    </button>
+  );
+}
+
 export default function DashboardPage() {
   const { user, loading, logout } = useAuth();
   const router = useRouter();
@@ -30,7 +50,7 @@ export default function DashboardPage() {
     return null;
   }
 
-  const getRoleColor = (role: string) => {
+  const getRoleColor = (role?: string) => {
     switch (role) {
       case "ADMIN":
         return "bg-red-100 text-red-800";
@@ -44,16 +64,6 @@ export default function DashboardPage() {
         return "bg-gray-100 text-gray-800";
     }
   };
-
-  const NavCard = ({ title, description, onClick }: { title: string; description?: string; onClick: () => void }) => (
-    <button
-      onClick={onClick}
-      className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow text-left hover:bg-gray-50"
-    >
-      <h3 className="font-semibold text-gray-900 text-lg">{title}</h3>
-      {description && <p className="text-sm text-gray-600 mt-1">{description}</p>}
-    </button>
-  );
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 p-8">

@@ -1,19 +1,32 @@
-@import url('https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,400;0,700;1,400&family=Poppins:wght@400;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;600;700;900&family=Poppins:wght@400;600;700&display=swap');
 @import "tailwindcss";
 
 :root {
   --background: #ffffff;
   --foreground: #171717;
 
-  /* Auth design tokens */
-  --color-primary: #BB7354;
-  --color-primary-dark: #8D4D31;
   --color-brand: #5B2012;
-  --color-text-heading: #525252;
-  --color-text-body: #1C1C15;
-  --color-text-muted: #44483D;
+  --color-brand-dark: #6D2615;
+  --color-primary: #BB7354;
+  --color-primary-dark: #8A4B2F;
+  --color-icon-brown: #854E31;
+  --color-text-heading: #8A4B2F;
+  --color-text-body: #53433D;
+  --color-text-dark: #211A18;
+  --color-text-muted: #52443D;
+  --color-text-table: #1B1C1B;
+  --color-border: #D8C2BA;
+  --color-border-table: #DBC1B9;
+  --color-card-bg: #FFFFFF;
+  --color-icon-bg: #E5E2E0;
+  --color-feature-icon-bg: #FFF1EC;
+  --color-header-bg: #F6F3F1;
+  --color-sidebar-bg: rgba(241, 227, 221, 0.3);
+  --color-sidebar-border: #EDEDF8;
+  --color-search-bg: rgba(237, 232, 228, 0.5);
+  --color-search-border: rgba(91, 32, 18, 0.08);
+  --color-search-placeholder: rgba(91, 32, 18, 0.44);
   --color-text-placeholder: #D1D5DB;
-  --color-border: #D1D5DB;
   --color-border-card: #C5C8BA;
   --color-role-selected-bg: rgba(100, 125, 70, 0.1);
   --color-role-selected-border: #4C6430;
@@ -25,21 +38,29 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --font-sans: "Lato", sans-serif;
+  --font-mono: "Courier New", monospace;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Lato', sans-serif;
+}
+
+button,
+input,
+select,
+textarea {
+  font-family: 'Lato', sans-serif;
+}
+
+.admin-heading {
+  font-family: 'Poppins', sans-serif;
+}
+
+.admin-mono {
+  font-family: 'Courier New', monospace;
 }
 
 /* Auth input placeholder */

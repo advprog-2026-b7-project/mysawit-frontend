@@ -75,8 +75,8 @@ export default function UserProfileCard({
 
       <div className="border-t pt-4 mt-4 flex justify-between items-center text-xs text-gray-500">
         <div>
-          <p>Created: {new Date(profile.createdAt).toLocaleDateString()}</p>
-          <p>Updated: {new Date(profile.updatedAt).toLocaleDateString()}</p>
+          <p>Created: {profile.createdAt ? new Date(profile.createdAt).toLocaleDateString() : "-"}</p>
+          <p>Updated: {profile.updatedAt ? new Date(profile.updatedAt).toLocaleDateString() : "-"}</p>
         </div>
         {onViewDetails && (
           <button

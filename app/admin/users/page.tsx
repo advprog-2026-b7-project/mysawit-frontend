@@ -1,152 +1,397 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import UserList from "@/features/profile/components/UserList";
-import { getAllUsersApi, deleteUserApi } from "@/features/profile/api";
-import { useAuth } from "@/features/auth/useAuth";
-import type { UserProfile, GetUsersFiltersRequest } from "@/features/profile/types";
+import AdminLayout from "@/components/layout/AdminLayout";
+import {
+  HardHatIcon,
+  SearchIcon,
+  TruckIcon,
+  UserCheckIcon,
+  UsersIcon,
+  ChevronDownIcon,
+} from "@/components/layout/AdminIcons";
+import {
+  deleteUser,
+  getMe,
+  getUsers,
+  type AdminUser,
+  type PageResponse,
+  type Role,
+  type UserFilters,
+} from "@/features/admin/api";
+
+const emptyPage: PageResponse<AdminUser> = {
+  content: [],
+  page: 0,
+  size: 20,
+  totalElements: 0,
+  totalPages: 0,
+};
+
+const roleStyles: Record<Role, string> = {
+  BURUH: "bg-[#857069] text-[#FFFBFF]",
+  MANDOR: "bg-[#FFA088] text-[#793423]",
+  SUPIR: "border border-[#85736C] bg-[#D7C2B9] text-[#1B1C1B]",
+  ADMIN: "bg-[#A26647] text-[#FFFBFF]",
+};
+
+function RoleBadge({ role }: { role: Role }) {
+  return (
+    <span
+      className={`inline-flex rounded-full px-3 py-1 text-[13px] font-semibold uppercase tracking-[0.65px] ${roleStyles[role]}`}
+    >
+      {role}
+    </span>
+  );
+}
+
+function StatCard({
+  label,
+  value,
+  Icon,
+}: {
+  label: string;
+  value: number;
+  Icon: typeof UsersIcon;
+}) {
+  return (
+    <div className="flex items-center gap-6 rounded-[12px] border border-[var(--color-border-table)] bg-white p-6 shadow-sm">
+      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[var(--color-icon-bg)] text-[var(--color-icon-brown)]">
+        <Icon className="h-6 w-6" />
+      </div>
+      <div>
+        <p className="text-[14px] font-bold text-[var(--color-text-muted)]">{label}</p>
+        <p className="mt-1 text-[48px] font-black leading-none tracking-[-0.96px] text-[var(--color-text-heading)]">
+          {value}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function SearchField({
+  placeholder,
+  value,
+  onChange,
+}: {
+  placeholder: string;
+  value: string;
+  onChange: (value: string) => void;
+}) {
+  return (
+    <div className="relative h-9 w-[300px]">
+      <SearchIcon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--color-brand)] opacity-50" />
+      <input
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        placeholder={placeholder}
+        className="h-9 w-full rounded-[10px] border border-[var(--color-search-border)] bg-[var(--color-search-bg)] py-2 pl-9 pr-3 text-[17px] text-[var(--color-text-dark)] outline-none placeholder:text-[var(--color-search-placeholder)]"
+      />
+    </div>
+  );
+}
+
+function RoleSelect({ value, onChange }: { value: "" | Role; onChange: (value: "" | Role) => void }) {
+  return (
+    <div className="relative h-9 w-[133px]">
+      <select
+        value={value}
+        onChange={(event) => onChange(event.target.value as "" | Role)}
+        className="h-9 w-full appearance-none rounded-[10px] border border-[var(--color-search-border)] bg-[var(--color-search-bg)] px-3 pr-8 text-[15px] font-semibold text-[var(--color-brand)] outline-none"
+      >
+        <option value="">All</option>
+        <option value="BURUH">BURUH</option>
+        <option value="MANDOR">MANDOR</option>
+        <option value="SUPIR">SUPIR</option>
+        <option value="ADMIN">ADMIN</option>
+      </select>
+      <ChevronDownIcon className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--color-brand)]" />
+    </div>
+  );
+}
 
 export default function AdminUsersPage() {
   const router = useRouter();
-  const { user: authUser, loading: authLoading } = useAuth();
-  const [users, setUsers] = useState<UserProfile[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [usersPage, setUsersPage] = useState<PageResponse<AdminUser>>(emptyPage);
+  const [stats, setStats] = useState({ total: 0, mandor: 0, buruh: 0, supir: 0 });
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [role, setRole] = useState<"" | Role>("");
+  const [debouncedFilters, setDebouncedFilters] = useState<UserFilters>({ page: 0, size: 20 });
+  const [page, setPage] = useState(0);
+  const [authorized, setAuthorized] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [filters, setFilters] = useState<GetUsersFiltersRequest>({});
 
-  // Check if user is authenticated and is ADMIN
   useEffect(() => {
-    if (!authLoading && !authUser) {
-      router.push("/auth/login");
+    const token = localStorage.getItem("token");
+    if (!token) {
+      router.push("/login");
+      return;
     }
-  }, [authUser, authLoading, router]);
 
-  // Fetch users (wait for auth to finish loading first)
-  useEffect(() => {
-    if (authLoading || !authUser) return;
-
-    const fetchUsers = async () => {
+    async function checkAccess() {
       try {
-        setIsLoading(true);
-        setError(null);
-        const data = await getAllUsersApi(filters);
-        const usersList = Array.isArray(data) ? data : [];
-        setUsers(usersList);
-      } catch (err) {
-        const message = err instanceof Error ? err.message : "Gagal memuat data pengguna";
-        if (message.includes("401") || message.includes("Unauthorized")) {
-          router.push("/auth/login");
+        const me = await getMe();
+        if (me.role !== "ADMIN") {
+          router.push("/dashboard");
           return;
         }
-        setError(message);
-        setUsers([]);
-      } finally {
-        setIsLoading(false);
+        setAuthorized(true);
+      } catch {
+        localStorage.removeItem("token");
+        router.push("/login");
       }
-    };
+    }
 
-    fetchUsers();
-  }, [filters, authLoading, authUser, router]);
+    void checkAccess();
+  }, [router]);
 
-  const handleSelectUser = (user: UserProfile) => {
-    router.push(`/profile/${user.id}`);
+  useEffect(() => {
+    const timeout = window.setTimeout(() => {
+      setPage(0);
+      setDebouncedFilters({
+        name: name.trim() || undefined,
+        email: email.trim() || undefined,
+        role: role || undefined,
+        page: 0,
+        size: 20,
+      });
+    }, 300);
+
+    return () => window.clearTimeout(timeout);
+  }, [name, email, role]);
+
+  useEffect(() => {
+    if (!authorized) return;
+
+    async function loadUsers() {
+      setLoading(true);
+      setError(null);
+      try {
+        const data = await getUsers({ ...debouncedFilters, page, size: 20 });
+        setUsersPage(data);
+      } catch (err) {
+        const message = err instanceof Error ? err.message : "Failed to load users";
+        setError(message);
+        setUsersPage(emptyPage);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    void loadUsers();
+  }, [authorized, debouncedFilters, page]);
+
+  useEffect(() => {
+    if (!authorized) return;
+
+    async function loadStats() {
+      try {
+        const [total, mandor, buruh, supir] = await Promise.all([
+          getUsers({ page: 0, size: 1 }),
+          getUsers({ role: "MANDOR", page: 0, size: 1 }),
+          getUsers({ role: "BURUH", page: 0, size: 1 }),
+          getUsers({ role: "SUPIR", page: 0, size: 1 }),
+        ]);
+        setStats({
+          total: total.totalElements,
+          mandor: mandor.totalElements,
+          buruh: buruh.totalElements,
+          supir: supir.totalElements,
+        });
+      } catch {
+        setStats({ total: 0, mandor: 0, buruh: 0, supir: 0 });
+      }
+    }
+
+    void loadStats();
+  }, [authorized]);
+
+  const hasFilters = useMemo(() => Boolean(name || email || role), [name, email, role]);
+
+  const refreshUsers = async () => {
+    const [data, total, mandor, buruh, supir] = await Promise.all([
+      getUsers({ ...debouncedFilters, page, size: 20 }),
+      getUsers({ page: 0, size: 1 }),
+      getUsers({ role: "MANDOR", page: 0, size: 1 }),
+      getUsers({ role: "BURUH", page: 0, size: 1 }),
+      getUsers({ role: "SUPIR", page: 0, size: 1 }),
+    ]);
+    setUsersPage(data);
+    setStats({
+      total: total.totalElements,
+      mandor: mandor.totalElements,
+      buruh: buruh.totalElements,
+      supir: supir.totalElements,
+    });
   };
 
-  const handleFilterChange = (newFilters: GetUsersFiltersRequest) => {
-    setFilters(newFilters);
-  };
+  const handleDelete = async (user: AdminUser) => {
+    const displayName = user.nama || user.username;
+    const confirmed = window.confirm(
+      `Are you sure you want to delete ${displayName}? This action cannot be undone.`,
+    );
+    if (!confirmed) return;
 
-  const handleDeleteUser = async (user: UserProfile) => {
     try {
-      await deleteUserApi(user.id);
-      setUsers((prev) => prev.filter((u) => u.id !== user.id));
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Gagal menghapus pengguna");
+      setError(null);
+      await deleteUser(user.id);
+      await refreshUsers();
+    } catch (err: unknown) {
+      const status = (err as { response?: { status?: number } })?.response?.status;
+      if (status === 409) {
+        setError("Cannot delete this user because they have active assignments.");
+        return;
+      }
+      setError(err instanceof Error ? err.message : "Failed to delete user");
     }
   };
 
-  if (authLoading) {
+  if (!authorized) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 py-12 px-4">
-        <div className="flex justify-center items-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
-        </div>
-      </div>
+      <AdminLayout activePage="Users">
+        <div className="text-[16px] text-[var(--color-text-body)]">Checking access...</div>
+      </AdminLayout>
     );
   }
 
-  if (!authUser) {
-    return null;
-  }
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 py-12 px-4">
-      <div className="max-w-6xl mx-auto">
-        {/* Header */}
-        <div className="mb-8">
-          <button
-            onClick={() => router.push("/dashboard")}
-            className="mb-4 text-gray-600 hover:text-gray-800 font-semibold flex items-center gap-2"
-          >
-            ← Kembali ke Dashboard
-          </button>
-          <h1 className="text-4xl font-bold text-gray-800">
-            Manajemen Pengguna
-          </h1>
-          <p className="text-gray-600 mt-2">
-            Kelola dan lihat detail semua pengguna dalam sistem
-          </p>
-        </div>
+    <AdminLayout activePage="Users">
+      <div className="flex flex-col gap-8">
+        <h1 className="admin-heading text-[50px] font-bold tracking-[-1.25px] text-[var(--color-text-heading)]">
+          Manage Users
+        </h1>
 
-        {/* Error Message */}
+        <section className="grid grid-cols-4 gap-6">
+          <StatCard label="Total Users" value={stats.total} Icon={UsersIcon} />
+          <StatCard label="Mandor" value={stats.mandor} Icon={UserCheckIcon} />
+          <StatCard label="Buruh" value={stats.buruh} Icon={HardHatIcon} />
+          <StatCard label="Supir" value={stats.supir} Icon={TruckIcon} />
+        </section>
+
+        <section className="flex flex-wrap items-center gap-4">
+          <SearchField placeholder="Search by Name" value={name} onChange={setName} />
+          <SearchField placeholder="Search by Email" value={email} onChange={setEmail} />
+          <RoleSelect value={role} onChange={setRole} />
+          <button
+            type="button"
+            disabled={!hasFilters}
+            onClick={() => {
+              setName("");
+              setEmail("");
+              setRole("");
+            }}
+            className="h-9 w-[133px] rounded-[8px] border border-[#D9C1BC] bg-white text-[15px] font-semibold text-[rgba(91,32,18,0.5)] disabled:opacity-60"
+          >
+            Reset Filters
+          </button>
+        </section>
+
         {error && (
-          <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
-            <h3 className="text-red-800 font-semibold mb-2">Error</h3>
-            <p className="text-red-700">{error}</p>
+          <div className="rounded-[10px] border border-[#E7B8B8] bg-[#FFF4F4] px-4 py-3 text-[14px] font-semibold text-[#BA1A1A]">
+            {error}
           </div>
         )}
 
-        {/* Users List */}
-        <UserList
-          users={users}
-          isLoading={isLoading}
-          onSelectUser={handleSelectUser}
-          onFilterChange={handleFilterChange}
-          onDeleteUser={handleDeleteUser}
-          currentUserId={authUser?.id}
-        />
+        <section className="overflow-hidden rounded-[12px] border border-[var(--color-border-table)] bg-white shadow-sm">
+          <table className="w-full border-collapse">
+            <thead className="bg-[var(--color-header-bg)]">
+              <tr className="border-b border-[var(--color-border-table)]">
+                <th className="px-6 py-4 text-left text-[14px] font-bold text-[var(--color-text-muted)]">
+                  Name
+                </th>
+                <th className="px-6 py-4 text-left text-[14px] font-bold text-[var(--color-text-muted)]">
+                  Email
+                </th>
+                <th className="px-6 py-4 text-left text-[14px] font-bold text-[var(--color-text-muted)]">
+                  Role
+                </th>
+                <th className="px-6 py-4 text-right text-[14px] font-bold text-[var(--color-text-muted)]">
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {loading && (
+                <tr>
+                  <td colSpan={4} className="px-6 py-10 text-center text-[16px] text-[var(--color-text-muted)]">
+                    Loading users...
+                  </td>
+                </tr>
+              )}
 
-        {/* Stats */}
-        {!isLoading && (
-          <div className="mt-6 grid grid-cols-4 gap-4">
-            <div className="bg-white rounded-lg shadow p-4">
-              <div className="text-sm text-gray-600 font-medium">Total Pengguna</div>
-              <div className="text-3xl font-bold text-green-600 mt-2">
-                {users.length}
-              </div>
-            </div>
-            <div className="bg-white rounded-lg shadow p-4">
-              <div className="text-sm text-gray-600 font-medium">Admin</div>
-              <div className="text-3xl font-bold text-red-600 mt-2">
-                {users.filter(u => u.role === "ADMIN").length}
-              </div>
-            </div>
-            <div className="bg-white rounded-lg shadow p-4">
-              <div className="text-sm text-gray-600 font-medium">Mandor</div>
-              <div className="text-3xl font-bold text-blue-600 mt-2">
-                {users.filter(u => u.role === "MANDOR").length}
-              </div>
-            </div>
-            <div className="bg-white rounded-lg shadow p-4">
-              <div className="text-sm text-gray-600 font-medium">Buruh</div>
-              <div className="text-3xl font-bold text-green-600 mt-2">
-                {users.filter(u => u.role === "BURUH").length}
-              </div>
-            </div>
+              {!loading && usersPage.content.length === 0 && (
+                <tr>
+                  <td colSpan={4} className="px-6 py-10 text-center text-[16px] text-[var(--color-text-muted)]">
+                    No users found
+                  </td>
+                </tr>
+              )}
+
+              {!loading &&
+                usersPage.content.map((user) => (
+                  <tr key={user.id} className="border-t border-[var(--color-border-table)]">
+                    <td className="px-6 py-[19px] text-[16px] font-bold text-[var(--color-text-table)]">
+                      {user.nama || user.username}
+                    </td>
+                    <td className="px-6 py-[19px] text-[16px] font-normal text-[var(--color-text-muted)]">
+                      {user.email}
+                    </td>
+                    <td className="px-6 py-[19px]">
+                      <RoleBadge role={user.role} />
+                    </td>
+                    <td className="px-6 py-[19px]">
+                      <div className="flex justify-end gap-[19px]">
+                        <button
+                          type="button"
+                          onClick={() => router.push(`/admin/users/${user.id}`)}
+                          className="text-[14px] font-bold text-[var(--color-icon-brown)]"
+                        >
+                          View Detail
+                        </button>
+                        {user.role !== "ADMIN" && (
+                          <button
+                            type="button"
+                            onClick={() => void handleDelete(user)}
+                            className="text-[14px] font-bold text-[#BA1A1A]"
+                          >
+                            Delete
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+            </tbody>
+          </table>
+        </section>
+
+        {usersPage.totalPages > 1 && (
+          <div className="flex items-center justify-end gap-3 text-[14px] font-semibold text-[var(--color-text-muted)]">
+            <button
+              type="button"
+              disabled={page === 0}
+              onClick={() => setPage((current) => Math.max(0, current - 1))}
+              className="rounded-[8px] border border-[var(--color-border)] bg-white px-4 py-2 disabled:opacity-50"
+            >
+              Prev
+            </button>
+            <span>
+              Page {page + 1} of {usersPage.totalPages}
+            </span>
+            <button
+              type="button"
+              disabled={page + 1 >= usersPage.totalPages}
+              onClick={() => setPage((current) => current + 1)}
+              className="rounded-[8px] border border-[var(--color-border)] bg-white px-4 py-2 disabled:opacity-50"
+            >
+              Next
+            </button>
           </div>
         )}
       </div>
-    </div>
+    </AdminLayout>
   );
 }

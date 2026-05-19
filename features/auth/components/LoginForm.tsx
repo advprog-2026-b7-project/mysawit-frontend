@@ -26,7 +26,8 @@ function extractToken(res: Record<string, unknown>): string | null {
 async function redirectByRole() {
   try {
     const res = await authClient.get("/api/auth/me");
-    const role: string = res.data?.role ?? "";
+    const user = res.data?.data ?? res.data;
+    const role: string = user?.role ?? "";
     window.location.href = role === "ADMIN" ? "/admin/dashboard" : "/dashboard";
   } catch {
     window.location.href = "/dashboard";
@@ -62,7 +63,7 @@ export default function LoginForm() {
   // Route guard: already-logged-in users go to dashboard
   useEffect(() => {
     if (typeof window !== "undefined" && localStorage.getItem("token")) {
-      window.location.href = "/dashboard";
+      void redirectByRole();
     }
   }, []);
 

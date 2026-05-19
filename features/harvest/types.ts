@@ -7,7 +7,7 @@ export interface HarvestCreateRequest {
 
 export interface HarvestResponse {
   id: string;
-  plantationId: string;
+  plantationId?: string | null;
   buruhId: string;
   buruhName?: string | null;
   weightKg: number;
@@ -26,6 +26,22 @@ export interface HarvestPageResponse {
   size: number;
   totalElements: number;
   totalPages: number;
+}
+
+export interface ApproveHarvestResponse {
+  id: string;
+  status: "APPROVED";
+  approvedBy: string;
+  approvedAt: string;
+  payrollStatus: "QUEUED";
+}
+
+export interface RejectHarvestResponse {
+  id: string;
+  status: "REJECTED";
+  rejectionReason?: string | null;
+  rejectedBy: string;
+  rejectedAt: string;
 }
 
 export interface HarvestHistoryFilters {

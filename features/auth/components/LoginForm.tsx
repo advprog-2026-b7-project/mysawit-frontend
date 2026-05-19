@@ -1,123 +1,207 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
-import { useLogin, useGoogleLogin } from "../hooks";
-import { GoogleLogin } from "@react-oauth/google";
+import AuthLayout from "./AuthLayout";
+import TextInput from "./TextInput";
+import PrimaryButton from "./PrimaryButton";
+import GoogleButton from "./GoogleButton";
+import OrDivider from "./OrDivider";
+import RolePickerModal from "./RolePickerModal";
+import authClient from "@/services/authClient";
+
+type Role = "BURUH" | "MANDOR" | "SUPIR";
+
+function extractToken(res: Record<string, unknown>): string | null {
+  if (typeof res.token === "string" && res.token) return res.token;
+  if (typeof res.accessToken === "string" && res.accessToken) return res.accessToken;
+  if (typeof res.jwt === "string" && res.jwt) return res.jwt;
+  if (res.data && typeof res.data === "object") {
+    const d = res.data as Record<string, unknown>;
+    if (typeof d.token === "string") return d.token;
+  }
+  return null;
+}
+
+async function redirectByRole() {
+  try {
+    const res = await authClient.get("/api/auth/me");
+    const role: string = res.data?.role ?? "";
+    window.location.href = role === "ADMIN" ? "/admin/dashboard" : "/dashboard";
+  } catch {
+    window.location.href = "/dashboard";
+  }
+}
+
+function isRoleRequired(err: unknown): boolean {
+  const e = err as { response?: { data?: { message?: string; errors?: unknown[] } } };
+  const msg = (e?.response?.data?.message ?? "").toLowerCase();
+  const errors = e?.response?.data?.errors ?? [];
+  return (
+    msg.includes("role is required") ||
+    msg.includes("role_required") ||
+    (Array.isArray(errors) &&
+      errors.some(
+        (er) =>
+          typeof er === "string" &&
+          (er.toLowerCase().includes("role is required") || er.toLowerCase().includes("role_required"))
+      ))
+  );
+}
 
 export default function LoginForm() {
-  const { login, loading, error } = useLogin();
-  const { googleLogin, loading: googleLoading, error: googleError } = useGoogleLogin();
-
-  const [email, setEmail] = useState("");
+  const [email, setEmail]       = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError]       = useState("");
+  const [loading, setLoading]   = useState(false);
 
+  // Google OAuth role picker state
+  const [pendingIdToken, setPendingIdToken] = useState<string | null>(null);
+  const [modalLoading, setModalLoading]     = useState(false);
+
+  // Route guard: already-logged-in users go to dashboard
+  useEffect(() => {
+    if (typeof window !== "undefined" && localStorage.getItem("token")) {
+      window.location.href = "/dashboard";
+    }
+  }, []);
+
+  const clearError = () => { if (error) setError(""); };
+
+  /* ── Credential login ──────────────────────────────────────── */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await login({ email, password });
-  };
-
-  const handleGoogleSuccess = async (credentialResponse: any) => {
-    if (credentialResponse.credential) {
-      await googleLogin(credentialResponse.credential);
+    setLoading(true);
+    setError("");
+    try {
+      const res = await authClient.post("/api/auth/login", { email, password });
+      const token = extractToken(res.data as Record<string, unknown>);
+      if (!token) throw new Error("No token in response.");
+      localStorage.setItem("token", token);
+      await redirectByRole();
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { message?: string } } };
+      // Single anti-enumeration message regardless of whether email or password was wrong
+      const apiMsg = e?.response?.data?.message ?? "";
+      const isAuthError =
+        apiMsg === "INVALID_CREDENTIALS" ||
+        apiMsg === "ACCOUNT_INACTIVE" ||
+        (e as { response?: { status?: number } })?.response?.status === 401;
+      setError(isAuthError || !apiMsg ? "Invalid credentials. Please try again." : apiMsg);
+    } finally {
+      setLoading(false);
     }
   };
 
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
-      <div className="max-w-md w-full bg-white shadow-lg rounded-lg p-8">
+  /* ── Google OAuth ──────────────────────────────────────────── */
+  const handleGoogleSuccess = async (credential: string) => {
+    try {
+      const res = await authClient.post("/api/auth/google-login", { idToken: credential });
+      const token = extractToken(res.data as Record<string, unknown>);
+      if (!token) throw new Error("No token in response.");
+      localStorage.setItem("token", token);
+      await redirectByRole();
+    } catch (err: unknown) {
+      if (isRoleRequired(err)) {
+        setPendingIdToken(credential);
+      } else {
+        const e = err as { response?: { data?: { message?: string } } };
+        setError(e?.response?.data?.message || "Google sign-in failed. Please try again.");
+      }
+    }
+  };
 
-        <h1 className="text-2xl font-bold text-gray-900 text-center mb-2">
-          Welcome Back
+  /* ── Role picker confirm (Google new-user flow) ────────────── */
+  const handleRoleConfirm = async (role: Role, certNumber?: string) => {
+    if (!pendingIdToken) return;
+    setModalLoading(true);
+    try {
+      const body: Record<string, unknown> = { idToken: pendingIdToken, role };
+      if (certNumber) body.mandorCertificationNumber = certNumber;
+      const res = await authClient.post("/api/auth/google-login", body);
+      const token = extractToken(res.data as Record<string, unknown>);
+      if (!token) throw new Error("No token in response.");
+      localStorage.setItem("token", token);
+      setPendingIdToken(null);
+      await redirectByRole();
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { message?: string } } };
+      setError(e?.response?.data?.message || "Registration failed. Please try again.");
+      setPendingIdToken(null);
+    } finally {
+      setModalLoading(false);
+    }
+  };
+
+  /* ── Render ────────────────────────────────────────────────── */
+  return (
+    <>
+      <AuthLayout>
+        <h1
+          style={{
+            fontFamily: "'Lato', sans-serif",
+            fontWeight: 700,
+            fontSize: "29px",
+            color: "#525252",
+            margin: "0 0 28px",
+            lineHeight: 1.25,
+          }}
+        >
+          Sign in to Your Account
         </h1>
 
-        <p className="text-gray-700 text-center mb-6">
-          Sign in to your MySawit account
-        </p>
+        <form onSubmit={handleSubmit} noValidate>
+          <TextInput
+            label="Username"
+            placeholder="Type here"
+            value={email}
+            onChange={(e) => { setEmail(e.target.value); clearError(); }}
+          />
+          <TextInput
+            label="Password"
+            type="password"
+            placeholder="Type here"
+            value={password}
+            onChange={(e) => { setPassword(e.target.value); clearError(); }}
+            error={error || undefined}
+          />
 
-        {error && (
-          <div className="bg-red-50 border border-red-300 text-red-800 text-sm p-3 rounded mb-4">
-            {error}
+          <div style={{ marginTop: "8px", marginBottom: "12px" }}>
+            <PrimaryButton type="submit" label="Login" loading={loading} disabled={loading} />
           </div>
-        )}
-
-        {googleError && (
-          <div className="bg-red-50 border border-red-300 text-red-800 text-sm p-3 rounded mb-4">
-            {googleError}
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-
-          <div>
-            <label className="text-sm font-semibold text-gray-900">
-              Email
-            </label>
-
-            <input
-              type="email"
-              placeholder="you@example.com"
-              className="w-full border border-gray-300 rounded-md px-3 py-2 mt-1
-              text-gray-900 placeholder-gray-400
-              focus:ring-2 focus:ring-green-500 focus:outline-none"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-          </div>
-
-          <div>
-            <label className="text-sm font-semibold text-gray-900">
-              Password
-            </label>
-
-            <input
-              type="password"
-              placeholder="Enter your password"
-              className="w-full border border-gray-300 rounded-md px-3 py-2 mt-1
-              text-gray-900 placeholder-gray-400
-              focus:ring-2 focus:ring-green-500 focus:outline-none"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-          </div>
-
-          <button
-            disabled={loading || googleLoading}
-            className="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-2 rounded-md transition disabled:bg-gray-400"
-          >
-            {loading ? "Signing In..." : "Sign In"}
-          </button>
-
         </form>
 
-        <div className="mt-6 flex items-center">
-          <div className="flex-1 border-t border-gray-300"></div>
-          <span className="px-3 text-sm text-gray-600">Or continue with</span>
-          <div className="flex-1 border-t border-gray-300"></div>
-        </div>
+        <OrDivider />
 
-        <div className="mt-4 flex justify-center">
-          <GoogleLogin
-            onSuccess={handleGoogleSuccess}
-            onError={() => console.log("Login failed")}
-            size="large"
-            width="100%"
-          />
-        </div>
+        <GoogleButton
+          onSuccess={handleGoogleSuccess}
+          onError={() => setError("Google sign-in failed.")}
+        />
 
-        <p className="text-center text-sm text-gray-700 mt-6">
-          Don’t have an account?{" "}
-          <Link
-            href="/auth/register"
-            className="text-green-700 font-semibold hover:text-green-800"
-          >
-            Register
+        <p
+          style={{
+            textAlign: "center",
+            fontFamily: "'Lato', sans-serif",
+            fontWeight: 700,
+            fontSize: "11.2px",
+            color: "#525252",
+            marginTop: "20px",
+          }}
+        >
+          Are you new?{" "}
+          <Link href="/register" style={{ color: "#BB7354", textDecoration: "none", fontWeight: 700 }}>
+            Register Now
           </Link>
         </p>
+      </AuthLayout>
 
-      </div>
-    </div>
+      {pendingIdToken && (
+        <RolePickerModal
+          onConfirm={handleRoleConfirm}
+          onCancel={() => setPendingIdToken(null)}
+          loading={modalLoading}
+        />
+      )}
+    </>
   );
 }

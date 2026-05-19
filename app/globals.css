@@ -1,8 +1,25 @@
+@import url('https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,400;0,700;1,400&family=Poppins:wght@400;600;700&display=swap');
 @import "tailwindcss";
 
 :root {
   --background: #ffffff;
   --foreground: #171717;
+
+  /* Auth design tokens */
+  --color-primary: #BB7354;
+  --color-primary-dark: #8D4D31;
+  --color-brand: #5B2012;
+  --color-text-heading: #525252;
+  --color-text-body: #1C1C15;
+  --color-text-muted: #44483D;
+  --color-text-placeholder: #D1D5DB;
+  --color-border: #D1D5DB;
+  --color-border-card: #C5C8BA;
+  --color-role-selected-bg: rgba(100, 125, 70, 0.1);
+  --color-role-selected-border: #4C6430;
+  --color-role-selected-accent: #4C6430;
+  --color-role-icon-bg: #F2EEE2;
+  --color-overlay: rgba(28, 28, 21, 0.6);
 }
 
 @theme inline {
@@ -23,4 +40,40 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Auth input placeholder */
+.auth-input::placeholder {
+  font-family: 'Lato', sans-serif;
+  font-weight: 400;
+  font-size: 12.8px;
+  color: #D1D5DB;
+}
+
+.auth-input:focus {
+  outline: none;
+}
+
+/* Auth select */
+.auth-select {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+
+.auth-select option {
+  color: #1C1C15;
+}
+
+/* Modal cert input placeholder */
+.modal-cert-input::placeholder {
+  font-family: 'Poppins', sans-serif;
+  font-weight: 400;
+  font-size: 14px;
+  color: rgba(68, 72, 61, 0.5);
+}
+
+.modal-cert-input:focus {
+  outline: none;
+  border-color: #4C6430 !important;
 }

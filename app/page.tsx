@@ -13,7 +13,21 @@ export default function Home() {
   useEffect(() => {
     fetch("http://localhost:8080/users")
         .then((res) => res.json())
-        .then((data) => setUsers(data));
+        .then((data) => {
+          // Handle plain array, paginated { content: [] }, or wrapped { data: { content: [] } }
+          if (Array.isArray(data)) {
+            setUsers(data);
+          } else if (Array.isArray(data?.content)) {
+            setUsers(data.content);
+          } else if (Array.isArray(data?.data?.content)) {
+            setUsers(data.data.content);
+          } else if (Array.isArray(data?.data)) {
+            setUsers(data.data);
+          } else {
+            setUsers([]);
+          }
+        })
+        .catch(() => setUsers([]));
   }, []);
 
   return (

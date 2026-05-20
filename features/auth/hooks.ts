@@ -1,6 +1,32 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { loginApi, registerApi, googleLoginApi, logoutApi } from "./api";
 import type { LoginRequest, RegisterRequest } from "./types";
+import { jwtDecode } from "jwt-decode";
+
+
+interface JwtPayload {
+  sub: string;      // userId
+  email: string;
+  role: string;
+  name: string;
+}
+
+export function useAuth() {
+  const [user, setUser] = useState<JwtPayload | null>(null);
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+    try {
+      const decoded = jwtDecode<JwtPayload>(token);
+      setUser(decoded);
+    } catch {
+      setUser(null);
+    }
+  }, []);
+
+  return { user };
+}
 
 /**
  * Extract the JWT token from the login/register response.

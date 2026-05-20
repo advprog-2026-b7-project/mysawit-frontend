@@ -121,11 +121,13 @@ export default function DashboardPage() {
                 description="Track harvest activities"
                 onClick={() => router.push("/harvest")}
               />
-              <NavCard
-                title="Delivery"
-                description="Manage deliveries"
-                onClick={() => router.push("/delivery")}
-              />
+              {["MANDOR", "SUPIR", "ADMIN"].includes(user.role ?? "") && (
+                  <NavCard
+                      title="Delivery"
+                      description="Manage deliveries"
+                      onClick={() => router.push("/delivery")}
+                  />
+              )}
               <NavCard
                 title="Payment"
                 description="View payment information"

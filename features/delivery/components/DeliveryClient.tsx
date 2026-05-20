@@ -1,27 +1,30 @@
 "use client";
 
-import { useState } from "react";
-import ShipmentForm from "@/features/delivery/components/ShipmentForm";
-import ShipmentStatusButton from "@/features/delivery/components/ShipmentStatusButton";
-import type { Shipment } from "@/features/delivery/types";
+import { useAuth } from "@/features/auth/hooks";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
-export default function DeliveryClient() {
-    const [shipment, setShipment] = useState<Shipment | null>(null);
+export default function DeliveryPage() {
+    const { user } = useAuth();
+    const router = useRouter();
 
-    return (
-        <div>
-            <ShipmentForm onSuccess={(shipment) => setShipment(shipment)} />
+    useEffect(() => {
+        if (!user) return;
 
-            {shipment && (
-                <div style={{ marginTop: "20px" }}>
-                    <p>Shipment ID: <strong>{shipment.id}</strong></p>
-                    <p>Status saat ini: <strong>{shipment.status}</strong></p>
-                    <ShipmentStatusButton
-                        shipment={shipment}
-                        onStatusUpdated={(updated) => setShipment(updated)}
-                    />
-                </div>
-            )}
-        </div>
-    );
+        switch (user.role) {
+            case "MANDOR":
+                router.replace("/delivery/mandor");
+                break;
+            case "SUPIR":
+                router.replace("/delivery/driver");
+                break;
+            case "ADMIN":
+                router.replace("/delivery/admin");
+                break;
+            default:
+                router.replace("/dashboard");
+        }
+    }, [user, router]);
+
+    return <div>Redirecting...</div>;
 }

@@ -54,7 +54,7 @@ async function proxyRequest(request: Request, context: RouteContext) {
     return Response.json(
       {
         status: "error",
-        message: "Harvest service is unreachable",
+        message: `Harvest service is unreachable at ${HARVEST_BACKEND_URL}`,
       },
       { status: 502 }
     );
@@ -66,5 +66,9 @@ export function GET(request: Request, context: RouteContext) {
 }
 
 export function POST(request: Request, context: RouteContext) {
+  return proxyRequest(request, context);
+}
+
+export function PATCH(request: Request, context: RouteContext) {
   return proxyRequest(request, context);
 }

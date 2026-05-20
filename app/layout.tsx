@@ -3,8 +3,8 @@ import { GoogleOAuthProvider } from "@react-oauth/google";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "MySawit",
-  description: "MySawit plantation operations frontend",
+  title: "nyawitt",
+  description: "MySawit plantation management platform",
 };
 
 export default function RootLayout({

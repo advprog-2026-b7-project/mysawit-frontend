@@ -34,7 +34,8 @@ export function useAuth() {
         },
       });
 
-      setUser(response.data);
+      const payload = response.data as AuthUser | { data?: AuthUser };
+      setUser("data" in payload && payload.data ? payload.data : (payload as AuthUser));
     } catch (err: unknown) {
       if (axios.isAxiosError(err) && err.response?.status === 401) {
         localStorage.removeItem("token");

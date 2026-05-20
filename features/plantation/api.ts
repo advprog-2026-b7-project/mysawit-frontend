@@ -3,9 +3,11 @@ import plantationServiceClient from "@/services/plantationClient";
 import type {
 	AssignDriverRequest,
 	AssignMandorRequest,
+	ReassignPlantationRequest,
 	PlantationCreateRequest,
 	PlantationDetailResponse,
 	PlantationListFilters,
+	PlantationListItem,
 	PlantationResponse,
 } from "./types";
 
@@ -14,10 +16,19 @@ interface ApiSuccessResponse<T> {
 	data: T;
 }
 
+interface PagedData<T> {
+	content: T[];
+	page: number;
+	size: number;
+	totalElements: number;
+	totalPages: number;
+}
+
 function extractErrorMessage(err: unknown): string {
 	if (axios.isAxiosError(err)) {
 		const serverMsg =
 			err.response?.data?.message ||
+			(Array.isArray(err.response?.data?.errors) && err.response?.data?.errors[0]?.detail) ||
 			(Array.isArray(err.response?.data?.details) && err.response?.data?.details[0]?.detail) ||
 			err.response?.data?.error;
 		if (serverMsg) return serverMsg;
@@ -27,15 +38,20 @@ function extractErrorMessage(err: unknown): string {
 }
 
 class PlantationClient {
-	async getAll(filters?: PlantationListFilters): Promise<PlantationResponse[]> {
+	async getAll(filters?: PlantationListFilters): Promise<PlantationListItem[]> {
 		const params = new URLSearchParams();
 		if (filters?.name) params.append("name", filters.name);
 		if (filters?.code) params.append("code", filters.code);
 		const qs = params.toString();
 		const url = qs ? `/api/v1/plantations?${qs}` : "/api/v1/plantations";
 		try {
-			const response = await plantationServiceClient.get<ApiSuccessResponse<PlantationResponse[]>>(url);
-			return response.data.data;
+			const response = await plantationServiceClient.get<ApiSuccessResponse<PagedData<PlantationListItem> | PlantationListItem[]>>(url);
+			const data = response.data.data;
+			// Backend returns paginated envelope { content, page, ... }
+			if (data && !Array.isArray(data) && "content" in data) {
+				return data.content;
+			}
+			return data as PlantationListItem[];
 		} catch (err) {
 			throw new Error(extractErrorMessage(err));
 		}
@@ -72,9 +88,11 @@ class PlantationClient {
 		}
 	}
 
-	async unassignMandor(plantationId: string): Promise<void> {
+	async unassignMandor(plantationId: string, request: ReassignPlantationRequest): Promise<void> {
 		try {
-			await plantationServiceClient.delete(`/api/v1/plantations/${plantationId}/mandor`);
+			await plantationServiceClient.delete(`/api/v1/plantations/${plantationId}/mandor`, {
+				data: request,
+			});
 		} catch (err) {
 			throw new Error(extractErrorMessage(err));
 		}
@@ -88,9 +106,15 @@ class PlantationClient {
 		}
 	}
 
-	async unassignDriver(plantationId: string, driverId: string): Promise<void> {
+	async unassignDriver(
+		plantationId: string,
+		driverId: string,
+		request: ReassignPlantationRequest
+	): Promise<void> {
 		try {
-			await plantationServiceClient.delete(`/api/v1/plantations/${plantationId}/drivers/${driverId}`);
+			await plantationServiceClient.delete(`/api/v1/plantations/${plantationId}/drivers/${driverId}`, {
+				data: request,
+			});
 		} catch (err) {
 			throw new Error(extractErrorMessage(err));
 		}

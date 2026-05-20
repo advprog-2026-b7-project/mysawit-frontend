@@ -14,6 +14,8 @@ interface Props {
 export default function PlantationDetail({ plantation, onBack, onRefresh }: Props) {
   const [mandorId, setMandorId] = useState("");
   const [driverId, setDriverId] = useState("");
+  const [mandorReassignId, setMandorReassignId] = useState("");
+  const [driverReassignId, setDriverReassignId] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -38,7 +40,13 @@ export default function PlantationDetail({ plantation, onBack, onRefresh }: Prop
     });
 
   const handleUnassignMandor = () =>
-    wrap(() => plantationClient.unassignMandor(plantation.id));
+    wrap(async () => {
+      if (!mandorReassignId.trim()) throw new Error("Masukkan ID plantation tujuan reassignment");
+      await plantationClient.unassignMandor(plantation.id, {
+        reassignToPlantationId: mandorReassignId.trim(),
+      });
+      setMandorReassignId("");
+    });
 
   const handleAssignDriver = () =>
     wrap(async () => {
@@ -48,7 +56,15 @@ export default function PlantationDetail({ plantation, onBack, onRefresh }: Prop
     });
 
   const handleUnassignDriver = (id: string) =>
-    wrap(() => plantationClient.unassignDriver(plantation.id, id));
+    wrap(async () => {
+      if (!driverReassignId.trim()) throw new Error("Masukkan ID plantation tujuan reassignment");
+      await plantationClient.unassignDriver(plantation.id, id, {
+        reassignToPlantationId: driverReassignId.trim(),
+      });
+      setDriverReassignId("");
+    });
+
+  const drivers = plantation.drivers?.content ?? [];
 
   return (
     <div className="bg-white rounded-lg shadow-lg p-6 space-y-6">
@@ -90,22 +106,31 @@ export default function PlantationDetail({ plantation, onBack, onRefresh }: Prop
       <div className="border rounded-lg p-4">
         <h3 className="font-bold text-gray-800 mb-3">Mandor</h3>
         {plantation.mandor ? (
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="font-semibold text-gray-900">{plantation.mandor.name}</p>
-              {plantation.mandor.certificationNumber && (
-                <p className="text-xs text-gray-500">Sertifikasi: {plantation.mandor.certificationNumber}</p>
-              )}
+          <>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="font-semibold text-gray-900">{plantation.mandor.name}</p>
+                {plantation.mandor.certificationNumber && (
+                  <p className="text-xs text-gray-500">Sertifikasi: {plantation.mandor.certificationNumber}</p>
+                )}
+              </div>
+              <Button
+                variant="secondary"
+                onClick={handleUnassignMandor}
+                disabled={loading}
+                className="!text-red-600 !border-red-300 hover:!bg-red-50 text-xs px-3 py-1"
+              >
+                Copot
+              </Button>
             </div>
-            <Button
-              variant="secondary"
-              onClick={handleUnassignMandor}
-              disabled={loading}
-              className="!text-red-600 !border-red-300 hover:!bg-red-50 text-xs px-3 py-1"
-            >
-              Copot
-            </Button>
-          </div>
+            <input
+              type="text"
+              value={mandorReassignId}
+              onChange={(e) => setMandorReassignId(e.target.value)}
+              placeholder="UUID plantation tujuan reassignment"
+              className="mt-3 w-full border border-gray-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-green-500 focus:outline-none"
+            />
+          </>
         ) : (
           <div className="flex items-center gap-2">
             <input
@@ -126,11 +151,11 @@ export default function PlantationDetail({ plantation, onBack, onRefresh }: Prop
       <div className="border rounded-lg p-4">
         <h3 className="font-bold text-gray-800 mb-3">Supir Truk</h3>
 
-        {plantation.drivers.length === 0 ? (
+        {drivers.length === 0 ? (
           <p className="text-gray-500 text-sm mb-3">Belum ada supir ditugaskan</p>
         ) : (
           <ul className="space-y-2 mb-4">
-            {plantation.drivers.map((d) => (
+            {drivers.map((d) => (
               <li key={d.id} className="flex items-center justify-between text-sm">
                 <span className="font-semibold text-gray-900">{d.name}</span>
                 <Button
@@ -145,6 +170,14 @@ export default function PlantationDetail({ plantation, onBack, onRefresh }: Prop
             ))}
           </ul>
         )}
+
+        <input
+          type="text"
+          value={driverReassignId}
+          onChange={(e) => setDriverReassignId(e.target.value)}
+          placeholder="UUID plantation tujuan jika supir dicopot"
+          className="mb-3 w-full border border-gray-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-green-500 focus:outline-none"
+        />
 
         <div className="flex items-center gap-2 mt-2">
           <input

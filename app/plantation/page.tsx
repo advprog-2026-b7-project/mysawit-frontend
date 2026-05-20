@@ -4,13 +4,12 @@ import React, { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/features/auth/useAuth";
 import { plantationClient } from "@/features/plantation/api";
-import PlantationList from "@/features/plantation/components/PlantationList";
 import PlantationDetail from "@/features/plantation/components/PlantationDetail";
 import PlantationForm from "@/features/plantation/components/PlantationForm";
 import type {
   PlantationDetailResponse,
   PlantationListFilters,
-  PlantationResponse,
+  PlantationListItem,
 } from "@/features/plantation/types";
 
 type View = "list" | "detail" | "create";
@@ -19,7 +18,7 @@ export default function PlantationPage() {
   const router = useRouter();
   const { user: authUser, loading: authLoading } = useAuth();
   const [view, setView] = useState<View>("list");
-  const [plantations, setPlantations] = useState<PlantationResponse[]>([]);
+  const [plantations, setPlantations] = useState<PlantationListItem[]>([]);
   const [selectedDetail, setSelectedDetail] = useState<PlantationDetailResponse | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -48,7 +47,7 @@ export default function PlantationPage() {
     if (authUser && authUser.role === "ADMIN") fetchList();
   }, [authUser, fetchList]);
 
-  const handleSelectPlantation = async (p: PlantationResponse) => {
+  const handleSelectPlantation = async (p: PlantationListItem) => {
     try {
       const detail = await plantationClient.getById(p.id);
       setSelectedDetail(detail);
@@ -113,12 +112,68 @@ export default function PlantationPage() {
         )}
 
         {view === "list" && (
-          <PlantationList
-            plantations={plantations}
-            isLoading={isLoading}
-            onSelect={handleSelectPlantation}
-            onFilterChange={(f) => setFilters(f)}
-          />
+          <div className="bg-white rounded-lg shadow-lg p-6">
+            <h2 className="text-2xl font-bold text-gray-800 mb-6">Daftar Kebun Sawit</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <input
+                type="text"
+                placeholder="Cari nama kebun..."
+                onChange={(e) => setFilters((f) => ({ ...f, name: e.target.value || undefined }))}
+                className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+              />
+              <input
+                type="text"
+                placeholder="Cari kode kebun..."
+                onChange={(e) => setFilters((f) => ({ ...f, code: e.target.value || undefined }))}
+                className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+              />
+            </div>
+            {isLoading ? (
+              <div className="flex justify-center py-12">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600" />
+              </div>
+            ) : plantations.length === 0 ? (
+              <p className="text-center py-12 text-gray-500">Tidak ada kebun ditemukan</p>
+            ) : (
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b-2 border-gray-300">
+                    <th className="text-left px-4 py-3 font-semibold text-gray-700">Nama</th>
+                    <th className="text-left px-4 py-3 font-semibold text-gray-700">Kode</th>
+                    <th className="text-right px-4 py-3 font-semibold text-gray-700">Luas (ha)</th>
+                    <th className="text-center px-4 py-3 font-semibold text-gray-700">Mandor</th>
+                    <th className="text-center px-4 py-3 font-semibold text-gray-700">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {plantations.map((p) => (
+                    <tr key={p.id} className="border-b border-gray-200 hover:bg-gray-50">
+                      <td className="px-4 py-3 font-semibold text-gray-900">{p.name}</td>
+                      <td className="px-4 py-3 text-gray-600 font-mono text-sm">{p.code}</td>
+                      <td className="px-4 py-3 text-right text-gray-700">{p.area}</td>
+                      <td className="px-4 py-3 text-center">
+                        {p.mandorName ? (
+                          <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-semibold">
+                            {p.mandorName}
+                          </span>
+                        ) : (
+                          <span className="px-2 py-1 bg-gray-100 text-gray-500 rounded-full text-xs">Belum ada</span>
+                        )}
+                      </td>
+                      <td className="px-4 py-3 text-center">
+                        <button
+                          onClick={() => handleSelectPlantation(p)}
+                          className="px-3 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700"
+                        >
+                          Detail
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
         )}
 
         {view === "detail" && selectedDetail && (

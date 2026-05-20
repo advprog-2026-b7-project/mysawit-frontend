@@ -3,13 +3,13 @@ export interface UserProfile {
   username: string;
   email: string;
   role: "BURUH" | "MANDOR" | "ADMIN" | "SUPIR";
-  mandorCertificationNumber?: string;
-  mandorId?: string; // UUID reference to supervisor
+  mandorCertificationNumber?: string | null;
+  mandorId?: string | null; // UUID reference to supervisor
   createdAt?: string;
   updatedAt?: string;
 }
 
-export interface UserProfileResponse extends UserProfile {}
+export type UserProfileResponse = UserProfile;
 
 export interface MeResponse {
   id: string;

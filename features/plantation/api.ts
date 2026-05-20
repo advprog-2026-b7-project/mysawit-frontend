@@ -3,6 +3,7 @@ import plantationServiceClient from "@/services/plantationClient";
 import type {
 	AssignDriverRequest,
 	AssignMandorRequest,
+	ReassignPlantationRequest,
 	PlantationCreateRequest,
 	PlantationDetailResponse,
 	PlantationListFilters,
@@ -27,6 +28,7 @@ function extractErrorMessage(err: unknown): string {
 	if (axios.isAxiosError(err)) {
 		const serverMsg =
 			err.response?.data?.message ||
+			(Array.isArray(err.response?.data?.errors) && err.response?.data?.errors[0]?.detail) ||
 			(Array.isArray(err.response?.data?.details) && err.response?.data?.details[0]?.detail) ||
 			err.response?.data?.error;
 		if (serverMsg) return serverMsg;
@@ -86,9 +88,11 @@ class PlantationClient {
 		}
 	}
 
-	async unassignMandor(plantationId: string): Promise<void> {
+	async unassignMandor(plantationId: string, request: ReassignPlantationRequest): Promise<void> {
 		try {
-			await plantationServiceClient.delete(`/api/v1/plantations/${plantationId}/mandor`);
+			await plantationServiceClient.delete(`/api/v1/plantations/${plantationId}/mandor`, {
+				data: request,
+			});
 		} catch (err) {
 			throw new Error(extractErrorMessage(err));
 		}
@@ -102,9 +106,15 @@ class PlantationClient {
 		}
 	}
 
-	async unassignDriver(plantationId: string, driverId: string): Promise<void> {
+	async unassignDriver(
+		plantationId: string,
+		driverId: string,
+		request: ReassignPlantationRequest
+	): Promise<void> {
 		try {
-			await plantationServiceClient.delete(`/api/v1/plantations/${plantationId}/drivers/${driverId}`);
+			await plantationServiceClient.delete(`/api/v1/plantations/${plantationId}/drivers/${driverId}`, {
+				data: request,
+			});
 		} catch (err) {
 			throw new Error(extractErrorMessage(err));
 		}

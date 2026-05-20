@@ -1,5 +1,5 @@
-import axios from "axios";
 import authClient from "@/services/authClient";
+import plantationServiceClient from "@/services/plantationClient";
 
 export type Role = "BURUH" | "MANDOR" | "ADMIN" | "SUPIR";
 
@@ -109,14 +109,9 @@ export async function getAssignmentCount(): Promise<number> {
 }
 
 export async function getPlantationCount(): Promise<number> {
-  // TODO: Replace with a count endpoint when Plantation exposes pagination metadata.
-  const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
-  const response = await axios.get(
-    `${process.env.NEXT_PUBLIC_PLANTATION_API_URL || "http://localhost:8081"}/api/v1/plantations`,
-    {
-      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-    },
-  );
-  const data = unwrap<unknown>(response.data);
-  return Array.isArray(data) ? data.length : 0;
+  const response = await plantationServiceClient.get("/api/v1/plantations", {
+    params: { page: 0, size: 1 },
+  });
+  const data = unwrap<PageResponse<unknown>>(response.data);
+  return data.totalElements ?? data.content?.length ?? 0;
 }

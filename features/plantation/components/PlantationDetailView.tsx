@@ -48,6 +48,8 @@ export default function PlantationDetailView({ id }: PlantationDetailViewProps) 
   const [error, setError] = useState<string | null>(null);
   const [mandorInput, setMandorInput] = useState("");
   const [driverInput, setDriverInput] = useState("");
+  const [mandorReassignTarget, setMandorReassignTarget] = useState("");
+  const [driverReassignTarget, setDriverReassignTarget] = useState("");
   const [actionLoading, setActionLoading] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
 
@@ -89,8 +91,16 @@ export default function PlantationDetailView({ id }: PlantationDetailViewProps) 
     });
 
   const handleUnassignMandor = () => {
+    const reassignToPlantationId = mandorReassignTarget.trim();
+    if (!reassignToPlantationId) {
+      setActionError("Please enter the target plantation UUID for reassignment.");
+      return;
+    }
     if (!confirm("Are you sure you want to unassign this Mandor?")) return;
-    void runAction(() => plantationClient.unassignMandor(id));
+    void runAction(async () => {
+      await plantationClient.unassignMandor(id, { reassignToPlantationId });
+      setMandorReassignTarget("");
+    });
   };
 
   const handleAssignDriver = () =>
@@ -101,8 +111,16 @@ export default function PlantationDetailView({ id }: PlantationDetailViewProps) 
     });
 
   const handleUnassignDriver = (driverId: string) => {
+    const reassignToPlantationId = driverReassignTarget.trim();
+    if (!reassignToPlantationId) {
+      setActionError("Please enter the target plantation UUID for reassignment.");
+      return;
+    }
     if (!confirm("Are you sure you want to remove this driver?")) return;
-    void runAction(() => plantationClient.unassignDriver(id, driverId));
+    void runAction(async () => {
+      await plantationClient.unassignDriver(id, driverId, { reassignToPlantationId });
+      setDriverReassignTarget("");
+    });
   };
 
   if (loading) {
@@ -128,6 +146,8 @@ export default function PlantationDetailView({ id }: PlantationDetailViewProps) 
       </div>
     );
   }
+
+  const drivers = detail.drivers?.content ?? [];
 
   return (
     <div>
@@ -342,22 +362,42 @@ export default function PlantationDetailView({ id }: PlantationDetailViewProps) 
                 </div>
               </div>
               <div style={{ display: "flex", justifyContent: "flex-end" }}>
-                <button
-                  type="button"
-                  onClick={handleUnassignMandor}
-                  disabled={actionLoading}
-                  style={{
-                    background: "transparent",
-                    border: "none",
-                    fontFamily: "'Lato', sans-serif",
-                    fontWeight: 700,
-                    fontSize: 14,
-                    color: "#BA1A1A",
-                    cursor: actionLoading ? "not-allowed" : "pointer",
-                  }}
-                >
-                  Unassign
-                </button>
+                <div style={{ display: "flex", width: "100%", gap: 8 }}>
+                  <input
+                    type="text"
+                    value={mandorReassignTarget}
+                    onChange={(e) => setMandorReassignTarget(e.target.value)}
+                    placeholder="Reassign target plantation UUID..."
+                    style={{
+                      flex: 1,
+                      border: "1px solid #DBC1B9",
+                      borderRadius: 12,
+                      height: 40,
+                      padding: "0 12px",
+                      fontFamily: "'Lato', sans-serif",
+                      fontSize: 13,
+                      color: "#1B1C1B",
+                      outline: "none",
+                      boxSizing: "border-box",
+                    }}
+                  />
+                  <button
+                    type="button"
+                    onClick={handleUnassignMandor}
+                    disabled={actionLoading}
+                    style={{
+                      background: "transparent",
+                      border: "none",
+                      fontFamily: "'Lato', sans-serif",
+                      fontWeight: 700,
+                      fontSize: 14,
+                      color: "#BA1A1A",
+                      cursor: actionLoading ? "not-allowed" : "pointer",
+                    }}
+                  >
+                    Unassign
+                  </button>
+                </div>
               </div>
             </div>
           ) : (
@@ -425,7 +465,7 @@ export default function PlantationDetailView({ id }: PlantationDetailViewProps) 
             Truck Drivers
           </h3>
 
-          {detail.drivers.length === 0 ? (
+          {drivers.length === 0 ? (
             <p
               style={{
                 fontFamily: "'Lato', sans-serif",
@@ -439,7 +479,7 @@ export default function PlantationDetailView({ id }: PlantationDetailViewProps) 
             </p>
           ) : (
             <div style={{ marginBottom: 16 }}>
-              {detail.drivers.map((driver) => (
+              {drivers.map((driver) => (
                 <div
                   key={driver.id}
                   style={{
@@ -486,6 +526,39 @@ export default function PlantationDetailView({ id }: PlantationDetailViewProps) 
 
           {/* Add driver */}
           <div>
+            <label
+              style={{
+                fontFamily: "'Lato', sans-serif",
+                fontWeight: 700,
+                fontSize: 12,
+                color: "#53433D",
+                textTransform: "uppercase",
+                letterSpacing: "0.6px",
+                display: "block",
+                marginBottom: 8,
+              }}
+            >
+              Reassign Removed Driver To
+            </label>
+            <input
+              type="text"
+              value={driverReassignTarget}
+              onChange={(e) => setDriverReassignTarget(e.target.value)}
+              placeholder="Target plantation UUID..."
+              style={{
+                width: "100%",
+                border: "1px solid #DBC1B9",
+                borderRadius: 12,
+                height: 42,
+                padding: "0 16px",
+                fontFamily: "'Lato', sans-serif",
+                fontSize: 14,
+                color: "#1B1C1B",
+                outline: "none",
+                boxSizing: "border-box",
+                marginBottom: 16,
+              }}
+            />
             <label
               style={{
                 fontFamily: "'Lato', sans-serif",

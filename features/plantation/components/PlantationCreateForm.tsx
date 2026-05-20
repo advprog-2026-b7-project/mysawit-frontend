@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { plantationClient } from "@/features/plantation/api";
+import type { Coordinate } from "@/features/plantation/types";
 
 interface CoordPair {
   x: string;
@@ -13,7 +14,9 @@ const COORD_LABELS = ["NW (North-West)", "NE (North-East)", "SW (South-West)", "
 
 const inputStyle: React.CSSProperties = {
   background: "#FFFFFF",
-  border: "1px solid #DBC1B9",
+  borderWidth: 1,
+  borderStyle: "solid",
+  borderColor: "#DBC1B9",
   borderRadius: 12,
   height: 50,
   padding: "14px 16px",
@@ -81,7 +84,7 @@ export default function PlantationCreateForm() {
     const parsedArea = parseFloat(area);
     if (!area || isNaN(parsedArea) || parsedArea <= 0) { setError("Area must be a positive number."); return; }
 
-    const coordinates: number[][] = [];
+    const coordinates: Coordinate[] = [];
     for (let i = 0; i < coords.length; i++) {
       const xVal = parseInt(coords[i].x, 10);
       const yVal = parseInt(coords[i].y, 10);
@@ -339,7 +342,9 @@ export default function PlantationCreateForm() {
                       placeholder="0"
                       style={{
                         background: "#FFFFFF",
-                        border: "1px solid #DBC1B9",
+                        borderWidth: 1,
+                        borderStyle: "solid",
+                        borderColor: "#DBC1B9",
                         borderRadius: 8,
                         padding: "4px 8px",
                         height: 30,
@@ -380,7 +385,9 @@ export default function PlantationCreateForm() {
                       placeholder="0"
                       style={{
                         background: "#FFFFFF",
-                        border: "1px solid #DBC1B9",
+                        borderWidth: 1,
+                        borderStyle: "solid",
+                        borderColor: "#DBC1B9",
                         borderRadius: 8,
                         padding: "4px 8px",
                         height: 30,

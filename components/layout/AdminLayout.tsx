@@ -4,6 +4,7 @@ import { ReactNode, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import SideNavBar from "./SideNavBar";
 import { getMe, type MeResponse } from "@/features/admin/api";
+import { dashboardPathForRole } from "@/features/admin/routing";
 
 interface AdminLayoutProps {
   activePage: string;
@@ -16,26 +17,47 @@ export default function AdminLayout({ activePage, children, currentUser }: Admin
   const [collapsed, setCollapsed] = useState(false);
   const [fetchedUser, setFetchedUser] = useState<MeResponse | null>(null);
   const resolvedUser = currentUser !== undefined ? currentUser : fetchedUser;
+  const checkingAccess = currentUser === undefined && fetchedUser === null;
 
   useEffect(() => {
-    // If token is missing, redirect to login — that's the only hard gate.
     if (!localStorage.getItem("token")) {
       router.replace("/auth/login");
       return;
     }
 
-    // If currentUser was passed in by the page (e.g. dashboard uses useRoleDashboard),
-    // skip fetching again to avoid duplicate calls.
-    if (currentUser !== undefined) return;
+    if (currentUser !== undefined) {
+      if (currentUser && currentUser.role !== "ADMIN") {
+        router.replace(dashboardPathForRole(currentUser.role));
+      }
+      return;
+    }
 
-    // Fetch user for sidebar display only — do NOT remove the token or redirect on failure.
+    let active = true;
     getMe()
-      .then((me) => setFetchedUser(me))
+      .then((me) => {
+        if (!active) return;
+        if (me.role !== "ADMIN") {
+          router.replace(dashboardPathForRole(me.role));
+          return;
+        }
+        setFetchedUser(me);
+      })
       .catch(() => {
-        // Ignore — sidebar will show without a user name. Individual API calls
-        // will surface 401s if the token is truly invalid.
+        router.replace("/auth/login");
       });
+
+    return () => {
+      active = false;
+    };
   }, [currentUser, router]);
+
+  if (checkingAccess) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-white text-[16px] text-[var(--color-text-body)]">
+        Loading...
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-white">

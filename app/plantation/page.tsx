@@ -10,7 +10,6 @@ import type {
   PlantationDetailResponse,
   PlantationListFilters,
   PlantationListItem,
-  PlantationResponse,
 } from "@/features/plantation/types";
 
 type View = "list" | "detail" | "create";

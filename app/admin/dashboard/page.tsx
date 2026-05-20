@@ -70,7 +70,7 @@ export default function AdminDashboardPage() {
       title: "Plantations",
       description:
         "Track soil health, cultivation schedules, and yield forecasts for all active regional sites.",
-      href: "/plantation",
+      href: "/admin/plantations",
       Icon: LeafIcon,
     },
     {

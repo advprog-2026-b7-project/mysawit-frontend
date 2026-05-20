@@ -11,10 +11,8 @@ interface HarvestFormProps {
 
 export default function HarvestForm({ onSuccess }: HarvestFormProps) {
   const [formData, setFormData] = useState<HarvestCreateRequest>({
-    plantationId: "",
-    buruhId: "",
     weightKg: 0,
-    description: "",
+    notes: "",
   });
 
   const [photos, setPhotos] = useState<File[]>([]);
@@ -47,30 +45,25 @@ export default function HarvestForm({ onSuccess }: HarvestFormProps) {
 
     try {
       // Validate inputs
-      if (!formData.plantationId.trim()) {
-        throw new Error("Plantation ID is required");
-      }
-      if (!formData.buruhId.trim()) {
-        throw new Error("Buruh ID is required");
-      }
       if (formData.weightKg <= 0) {
         throw new Error("Weight must be a positive number");
       }
-      if (!formData.description.trim()) {
-        throw new Error("Description is required");
+      if (!formData.notes.trim()) {
+        throw new Error("Notes are required");
+      }
+      if (photos.length === 0) {
+        throw new Error("At least one harvest photo is required");
       }
 
       const response = await harvestClient.submitHarvest(
         formData,
-        photos.length > 0 ? photos : undefined
+        photos
       );
 
       setSuccess(`Harvest submitted successfully! ID: ${response.id}`);
       setFormData({
-        plantationId: "",
-        buruhId: "",
         weightKg: 0,
-        description: "",
+        notes: "",
       });
       setPhotos([]);
 
@@ -119,36 +112,6 @@ export default function HarvestForm({ onSuccess }: HarvestFormProps) {
 
       <form onSubmit={handleSubmit}>
         <div className={styles.formGroup}>
-          <label htmlFor="plantationId">
-            Plantation ID <span className={styles.required}>*</span>
-          </label>
-          <input
-            type="text"
-            id="plantationId"
-            name="plantationId"
-            value={formData.plantationId}
-            onChange={handleInputChange}
-            placeholder="Enter plantation UUID (e.g., 550e8400-e29b-41d4-a716-446655440000)"
-            required
-          />
-        </div>
-
-        <div className={styles.formGroup}>
-          <label htmlFor="buruhId">
-            Worker ID (Buruh) <span className={styles.required}>*</span>
-          </label>
-          <input
-            type="text"
-            id="buruhId"
-            name="buruhId"
-            value={formData.buruhId}
-            onChange={handleInputChange}
-            placeholder="Enter worker UUID (e.g., 550e8400-e29b-41d4-a716-446655440000)"
-            required
-          />
-        </div>
-
-        <div className={styles.formGroup}>
           <label htmlFor="weightKg">
             Harvest Weight (kg) <span className={styles.required}>*</span>
           </label>
@@ -167,31 +130,34 @@ export default function HarvestForm({ onSuccess }: HarvestFormProps) {
         </div>
 
         <div className={styles.formGroup}>
-          <label htmlFor="description">
-            Description <span className={styles.required}>*</span>
+          <label htmlFor="notes">
+            Notes <span className={styles.required}>*</span>
           </label>
           <textarea
-            id="description"
-            name="description"
-            value={formData.description}
+            id="notes"
+            name="notes"
+            value={formData.notes}
             onChange={handleInputChange}
-            placeholder="Enter harvest description (e.g., condition, location, notes)"
+            placeholder="Enter harvest notes, location detail, or fruit condition"
             required
           />
           <div className={styles.hint}>Provide details about the harvest</div>
         </div>
 
         <div className={styles.formGroup}>
-          <label htmlFor="photos">Upload Photos (Optional)</label>
+          <label htmlFor="photos">
+            Upload Photos <span className={styles.required}>*</span>
+          </label>
           <input
             type="file"
             id="photos"
             multiple
-            accept="image/*"
+            accept="image/jpeg,image/png,image/webp"
             onChange={handlePhotoChange}
+            required
           />
           <div className={styles.hint}>
-            You can upload one or more photos. Supported formats: JPG, PNG, GIF, etc.
+            Upload at least one JPG, PNG, or WebP photo.
           </div>
           {photos.length > 0 && (
             <div className={styles.photoCount}>

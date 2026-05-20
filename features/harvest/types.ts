@@ -1,17 +1,22 @@
 export interface HarvestCreateRequest {
-  plantationId: string;
-  buruhId: string;
   weightKg: number;
-  description: string;
+  notes: string;
 }
 
 export interface HarvestResponse {
   id: string;
   plantationId: string;
   buruhId: string;
+  buruhName: string;
   weightKg: number;
-  description: string;
+  notes: string;
+  harvestDate: string;
   status: string;
-  createdAt: string;
+  submittedAt: string;
   photoUrls?: string[];
+}
+
+export interface ApiSuccessResponse<T> {
+  status: string;
+  data: T;
 }

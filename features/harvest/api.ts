@@ -1,5 +1,25 @@
+import axios from "axios";
 import harvestServiceClient from "@/services/harvestClient";
-import type { HarvestCreateRequest, HarvestResponse } from "./types";
+import type {
+  ApiSuccessResponse,
+  HarvestCreateRequest,
+  HarvestResponse,
+} from "./types";
+
+function extractErrorMessage(error: unknown): string {
+  if (axios.isAxiosError(error)) {
+    const data = error.response?.data;
+    const message = data?.message || data?.error;
+    const key = data?.errorKey || (Array.isArray(data?.errors) ? data.errors[0] : null);
+    if (message && key) {
+      return `${key}: ${message}`;
+    }
+    if (message) {
+      return message;
+    }
+  }
+  return error instanceof Error ? error.message : "Unknown error";
+}
 
 class HarvestClient {
   async submitHarvest(
@@ -7,31 +27,27 @@ class HarvestClient {
     photos?: File[]
   ): Promise<HarvestResponse> {
     const formData = new FormData();
+    formData.append("weightKg", String(request.weightKg));
+    formData.append("notes", request.notes);
 
-    // Add request data as JSON blob
-    const dataBlob = new Blob([JSON.stringify(request)], {
-      type: "application/json",
-    });
-    formData.append("data", dataBlob);
-
-    // Add photos if provided
     if (photos && photos.length > 0) {
       photos.forEach((photo) => {
         formData.append("photos", photo);
       });
     }
 
-    const response = await harvestServiceClient.post<HarvestResponse>(
-      "/harvests",
-      formData,
-      {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      }
-    );
+    try {
+      const response = await harvestServiceClient.post<
+        ApiSuccessResponse<HarvestResponse>
+      >(
+        "/api/v1/harvests",
+        formData
+      );
 
-    return response.data;
+      return response.data.data;
+    } catch (error) {
+      throw new Error(extractErrorMessage(error));
+    }
   }
 }
 

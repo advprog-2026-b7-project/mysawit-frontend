@@ -20,3 +20,7 @@ export interface CreateShipmentRequest {
 export interface AssignDriverRequest {
     driverId: string;
 }
+export type Driver = {
+    id: string;
+    name: string;
+}

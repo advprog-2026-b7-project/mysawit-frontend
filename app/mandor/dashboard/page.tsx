@@ -1,6 +1,7 @@
 "use client";
 
-import AdminLayout from "@/components/layout/AdminLayout";
+// 👇 Ubah import dari AdminLayout menjadi MandorLayout
+import MandorLayout from "@/components/layout/MandorLayout";
 import {
   CheckCircleIcon,
   ClockIcon,
@@ -27,71 +28,73 @@ export default function MandorDashboardPage() {
 
   if (loading) {
     return (
-      <AdminLayout activePage="Dashboard" currentUser={user}>
-        <div className="text-[16px] text-[var(--color-text-body)]">Loading dashboard...</div>
-      </AdminLayout>
+        // 👇 Gunakan tag MandorLayout
+        <MandorLayout activePage="Dashboard" currentUser={user}>
+          <div className="text-[16px] text-[var(--color-text-body)]">Loading dashboard...</div>
+        </MandorLayout>
     );
   }
 
   return (
-    <AdminLayout activePage="Dashboard" currentUser={user}>
-      <div className="mx-auto flex max-w-[1280px] flex-col gap-12">
-        <DashboardHeader greeting={`Good morning, ${displayName}!`} />
+      // 👇 Gunakan tag MandorLayout
+      <MandorLayout activePage="Dashboard" currentUser={user}>
+        <div className="mx-auto flex max-w-[1280px] flex-col gap-12">
+          <DashboardHeader greeting={`Good morning, ${displayName}!`} />
 
-        <section className="grid grid-cols-3 gap-8">
-          <DashboardStatCard
-            title="Pending Harvest Reviews"
-            value={pendingReviews}
-            badge="PENDING"
-            Icon={ClockIcon}
-            tone="beige"
-          />
-          <DashboardStatCard
-            title="Active Shipments"
-            value={activeShipments}
-            badge="APPROVED"
-            Icon={CheckCircleIcon}
-            tone="green"
-          />
-          <DashboardStatCard
-            title="Team Members"
-            value={teamMembers}
-            Icon={UsersIcon}
-            tone="pink"
-          />
-        </section>
+          <section className="grid grid-cols-3 gap-8">
+            <DashboardStatCard
+                title="Pending Harvest Reviews"
+                value={pendingReviews}
+                badge="PENDING"
+                Icon={ClockIcon}
+                tone="beige"
+            />
+            <DashboardStatCard
+                title="Active Shipments"
+                value={activeShipments}
+                badge="APPROVED"
+                Icon={CheckCircleIcon}
+                tone="green"
+            />
+            <DashboardStatCard
+                title="Team Members"
+                value={teamMembers}
+                Icon={UsersIcon}
+                tone="pink"
+            />
+          </section>
 
-        <section className="grid grid-cols-2 gap-8">
-          <DashboardFeatureCard
-            title="Harvest Review"
-            subtitle="Approve daily yields"
-            badge="5 Pending"
-            href="/mandor/harvest-review"
-            Icon={LeafIcon}
-          />
-          <DashboardFeatureCard
-            title="Shipments"
-            subtitle="Track plantation logistics"
-            badge="2 Active"
-            href="/mandor/shipments"
-            Icon={TruckIcon}
-          />
-          <DashboardFeatureCard
-            title="My Team"
-            subtitle="Manage field workers"
-            badge="8 Members"
-            href="/mandor/team"
-            Icon={UsersIcon}
-            iconTone="green"
-          />
-          <DashboardFeatureCard
-            title="Payment & Wallet"
-            subtitle="View earnings & history"
-            href="/mandor/wallet"
-            Icon={WalletIcon}
-          />
-        </section>
-      </div>
-    </AdminLayout>
+          <section className="grid grid-cols-2 gap-8">
+            <DashboardFeatureCard
+                title="Harvest Review"
+                subtitle="Approve daily yields"
+                badge="5 Pending"
+                href="/mandor/harvest-review"
+                Icon={LeafIcon}
+            />
+            <DashboardFeatureCard
+                title="Shipments"
+                subtitle="Track plantation logistics"
+                badge="2 Active"
+                href="/mandor/shipments"
+                Icon={TruckIcon}
+            />
+            <DashboardFeatureCard
+                title="My Team"
+                subtitle="Manage field workers"
+                badge="8 Members"
+                href="/mandor/team"
+                Icon={UsersIcon}
+                iconTone="green"
+            />
+            <DashboardFeatureCard
+                title="Payment & Wallet"
+                subtitle="View earnings & history"
+                href="/mandor/wallet"
+                Icon={WalletIcon}
+            />
+          </section>
+        </div>
+      </MandorLayout>
   );
 }

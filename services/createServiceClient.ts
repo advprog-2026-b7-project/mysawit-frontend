@@ -1,11 +1,7 @@
 import axios from "axios";
 import type { AxiosInstance } from "axios";
+import { getTokenCookie, deleteTokenCookie } from "./tokenCookie";
 
-/**
- * Factory to create a service-specific axios instance.
- * Each instance has its own baseURL, JSON headers, and
- * automatic Bearer token injection from localStorage.
- */
 export function createServiceClient(baseURL: string): AxiosInstance {
   const client = axios.create({
     baseURL,
@@ -16,11 +12,10 @@ export function createServiceClient(baseURL: string): AxiosInstance {
 
   client.interceptors.request.use((config) => {
     if (typeof window !== "undefined") {
-      // Let the browser set Content-Type with boundary for multipart
       if (config.data instanceof FormData) {
         delete (config.headers as Record<string, string>)["Content-Type"];
       }
-      const token = localStorage.getItem("token");
+      const token = getTokenCookie();
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
       }
@@ -28,9 +23,6 @@ export function createServiceClient(baseURL: string): AxiosInstance {
     return config;
   });
 
-  // 401 guard: only redirect to login if the auth service itself rejects the token.
-  // Do NOT wipe the token here — a 401 from a downstream service (plantation, harvest, etc.)
-  // does not mean the token is invalid globally.
   client.interceptors.response.use(
     (response) => response,
     (error) => {
@@ -39,9 +31,9 @@ export function createServiceClient(baseURL: string): AxiosInstance {
         error?.response?.status === 401 &&
         baseURL === (process.env.NEXT_PUBLIC_AUTH_API_URL || "http://localhost:8080")
       ) {
-        const token = localStorage.getItem("token");
+        const token = getTokenCookie();
         if (token) {
-          localStorage.removeItem("token");
+          deleteTokenCookie();
           window.location.href = "/auth/login";
         }
       }

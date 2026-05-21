@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import axios from "axios";
+import { getTokenCookie, deleteTokenCookie } from "@/services/tokenCookie";
 
 interface AuthUser {
   id: string;
@@ -18,7 +19,7 @@ export function useAuth() {
   const baseURL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
 
   const loadCurrentUser = async () => {
-    const token = localStorage.getItem("token");
+    const token = getTokenCookie();
 
     if (!token) {
       setLoading(false);
@@ -38,7 +39,7 @@ export function useAuth() {
       setUser("data" in payload && payload.data ? payload.data : (payload as AuthUser));
     } catch (err: unknown) {
       if (axios.isAxiosError(err) && err.response?.status === 401) {
-        localStorage.removeItem("token");
+        deleteTokenCookie();
       }
     } finally {
       setLoading(false);
@@ -50,7 +51,7 @@ export function useAuth() {
   }, []);
 
   const logout = async () => {
-    const token = localStorage.getItem("token") ?? "";
+    const token = getTokenCookie() ?? "";
     try {
       await axios.post(
         `${baseURL}/api/auth/logout`,
@@ -58,9 +59,9 @@ export function useAuth() {
         { headers: { Authorization: `Bearer ${token}` } }
       );
     } catch {
-      console.warn("Backend logout failed, clearing token locally.");
+      // ignore
     } finally {
-      localStorage.removeItem("token");
+      deleteTokenCookie();
       window.location.href = "/auth/login";
     }
   };

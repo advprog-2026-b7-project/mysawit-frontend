@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { getMe } from "@/features/admin/api";
 import { dashboardPathForRole } from "@/features/admin/routing";
+import { getTokenCookie, deleteTokenCookie } from "@/services/tokenCookie";
 
 export default function DashboardRedirectPage() {
   const router = useRouter();

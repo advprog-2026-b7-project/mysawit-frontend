@@ -5,6 +5,8 @@ import { usePathname, useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import type { MeResponse, Role } from "@/features/admin/api";
 import { dashboardPathForRole } from "@/features/admin/routing";
+import { logoutApi } from "@/features/auth/api";
+import { getTokenCookie, deleteTokenCookie } from "@/services/tokenCookie";
 import {
   ChevronLeftIcon,
   ChevronRightIcon,
@@ -95,12 +97,23 @@ export default function SideNavBar({
       router.push(dashboardPathForRole(role));
       return;
     }
+<<<<<<< Updated upstream
     router.push(localStorage.getItem("token") ? "/dashboard" : "/auth/login");
   };
 
   const logout = () => {
     localStorage.removeItem("token");
     router.push("/auth/login");
+=======
+    router.push(getTokenCookie() ? "/dashboard" : "/login");
+  };
+
+  const logout = () => {
+    void logoutApi().catch(() => undefined).finally(() => {
+      deleteTokenCookie();
+      router.push("/login");
+    });
+>>>>>>> Stashed changes
   };
 
   return (

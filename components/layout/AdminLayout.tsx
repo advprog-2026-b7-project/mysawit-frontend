@@ -4,6 +4,7 @@ import { ReactNode, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import SideNavBar from "./SideNavBar";
 import { getMe, type MeResponse } from "@/features/admin/api";
+import { getTokenCookie } from "@/services/tokenCookie";
 
 interface AdminLayoutProps {
   activePage: string;
@@ -19,17 +20,14 @@ export default function AdminLayout({ activePage, children, currentUser }: Admin
   const checkingAccess = currentUser === undefined && fetchedUser === null;
 
   useEffect(() => {
-    if (!localStorage.getItem("token")) {
+    // If token is missing, redirect to login — that's the only hard gate.
+    if (!getTokenCookie()) {
       router.replace("/auth/login");
       return;
     }
 
-    if (currentUser !== undefined) {
-      setFetchedUser(currentUser);
-      return;
-    }
+    if (currentUser !== undefined) return;
 
-    let active = true;
     getMe()
       .then((me) => {
         if (!active) return;

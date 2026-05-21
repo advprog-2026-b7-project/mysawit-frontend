@@ -9,6 +9,7 @@ import GoogleButton from "./GoogleButton";
 import OrDivider from "./OrDivider";
 import RolePickerModal from "./RolePickerModal";
 import authClient from "@/services/authClient";
+import { setTokenCookie, getTokenCookie } from "@/services/tokenCookie";
 
 type Role = "BURUH" | "MANDOR" | "SUPIR";
 
@@ -62,7 +63,7 @@ export default function LoginForm() {
 
   // Route guard: already-logged-in users go to dashboard
   useEffect(() => {
-    if (typeof window !== "undefined" && localStorage.getItem("token")) {
+    if (typeof window !== "undefined" && getTokenCookie()) {
       void redirectByRole();
     }
   }, []);
@@ -78,7 +79,7 @@ export default function LoginForm() {
       const res = await authClient.post("/api/auth/login", { email, password });
       const token = extractToken(res.data as Record<string, unknown>);
       if (!token) throw new Error("No token in response.");
-      localStorage.setItem("token", token);
+      setTokenCookie(token);
       await redirectByRole();
     } catch (err: unknown) {
       const e = err as { response?: { data?: { message?: string } } };
@@ -100,7 +101,7 @@ export default function LoginForm() {
       const res = await authClient.post("/api/auth/google-login", { idToken: credential });
       const token = extractToken(res.data as Record<string, unknown>);
       if (!token) throw new Error("No token in response.");
-      localStorage.setItem("token", token);
+      setTokenCookie(token);
       await redirectByRole();
     } catch (err: unknown) {
       if (isRoleRequired(err)) {
@@ -122,7 +123,7 @@ export default function LoginForm() {
       const res = await authClient.post("/api/auth/google-login", body);
       const token = extractToken(res.data as Record<string, unknown>);
       if (!token) throw new Error("No token in response.");
-      localStorage.setItem("token", token);
+      setTokenCookie(token);
       setPendingIdToken(null);
       await redirectByRole();
     } catch (err: unknown) {

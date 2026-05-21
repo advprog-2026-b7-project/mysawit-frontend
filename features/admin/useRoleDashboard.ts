@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getMe, type MeResponse, type Role } from "./api";
+import { getTokenCookie } from "@/services/tokenCookie";
 import { dashboardPathForRole } from "./routing";
 
 export function useRoleDashboard(expectedRole: Role) {
@@ -11,7 +12,7 @@ export function useRoleDashboard(expectedRole: Role) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
+    const token = getTokenCookie();
     if (!token) {
       router.push("/auth/login");
       return;

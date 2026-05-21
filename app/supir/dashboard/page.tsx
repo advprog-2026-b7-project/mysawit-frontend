@@ -16,6 +16,7 @@ import {
   DashboardTable,
 } from "@/components/dashboard/DashboardComponents";
 import { useRoleDashboard } from "@/features/admin/useRoleDashboard";
+import WorkerPayrollSection from "@/features/payment/components/WorkerPayrollSection";
 
 export default function SupirDashboardPage() {
   const { user, loading } = useRoleDashboard("SUPIR");
@@ -91,6 +92,14 @@ export default function SupirDashboardPage() {
           rows={[]}
           emptyLabel="Shipment history is not available yet."
         />
+
+        {user && (
+          <WorkerPayrollSection
+            userId={user.id}
+            workerType="SUPIR_TRUK"
+            workerName={displayName}
+          />
+        )}
       </div>
     </AdminLayout>
   );

@@ -1,23 +1,26 @@
 export interface UserProfile {
   id: string;
   username: string;
+  nama?: string;
   email: string;
   role: "BURUH" | "MANDOR" | "ADMIN" | "SUPIR";
-  mandorCertificationNumber?: string;
-  mandorId?: string; // UUID reference to supervisor
+  mandorCertificationNumber?: string | null;
+  mandorId?: string | null; // UUID reference to supervisor
   createdAt?: string;
   updatedAt?: string;
 }
 
-export interface UserProfileResponse extends UserProfile {}
+export type UserProfileResponse = UserProfile;
 
 export interface MeResponse {
   id: string;
   email: string;
   username: string;
+  nama?: string;
   role: "BURUH" | "MANDOR" | "ADMIN" | "SUPIR";
   mandorCertificationNumber?: string | null;
   mandorId?: string | null;
+  createdAt?: string;
 }
 
 export interface GetUsersFiltersRequest {
@@ -40,11 +43,16 @@ export interface CreateAssignmentRequest {
 export interface AssignmentResponse {
   id: string;
   buruhId: string;
+  buruhNama?: string;
   buruhName: string;
   mandorId: string;
+  mandorNama?: string;
   mandorName: string;
+  plantationId?: string | null;
+  assignedAt?: string;
   createdAt: string;
-  updatedAt: string;
+  updatedAt?: string;
+  reassignedAt?: string | null;
 }
 
 export interface ReassignmentRequest {

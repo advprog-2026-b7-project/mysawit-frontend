@@ -1,122 +1,334 @@
 "use client";
 
-import React, { useState } from "react";
-import type { PlantationListFilters, PlantationResponse } from "../types";
-import Button from "@/components/ui/Button";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
+import { plantationClient } from "@/features/plantation/api";
+import type { PlantationListItem } from "@/features/plantation/types";
+import PlantationCodeBadge from "./PlantationCodeBadge";
+import MandorBadge from "./MandorBadge";
 
-interface PlantationListProps {
-  plantations: PlantationResponse[];
-  isLoading?: boolean;
-  onSelect?: (plantation: PlantationResponse) => void;
-  onFilterChange?: (filters: PlantationListFilters) => void;
-}
+export default function PlantationList() {
+  const router = useRouter();
+  const [plantations, setPlantations] = useState<PlantationListItem[]>([]);
+  const [nameFilter, setNameFilter] = useState("");
+  const [codeFilter, setCodeFilter] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-const EMPTY_FILTERS: PlantationListFilters = { name: "", code: "" };
+  const fetchPlantations = useCallback(async (name: string, code: string) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await plantationClient.getAll({ name: name || undefined, code: code || undefined });
+      setPlantations(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to load plantations.");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
-export default function PlantationList({
-  plantations,
-  isLoading = false,
-  onSelect,
-  onFilterChange,
-}: PlantationListProps) {
-  const [filters, setFilters] = useState<PlantationListFilters>(EMPTY_FILTERS);
+  useEffect(() => {
+    void fetchPlantations("", "");
+  }, [fetchPlantations]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    const next = { ...filters, [name]: value };
-    setFilters(next);
-    onFilterChange?.({ name: next.name || undefined, code: next.code || undefined });
+  const handleNameChange = (val: string) => {
+    setNameFilter(val);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      void fetchPlantations(val, codeFilter);
+    }, 300);
+  };
+
+  const handleCodeChange = (val: string) => {
+    setCodeFilter(val);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      void fetchPlantations(nameFilter, val);
+    }, 300);
   };
 
   const handleReset = () => {
-    setFilters(EMPTY_FILTERS);
-    onFilterChange?.({});
+    setNameFilter("");
+    setCodeFilter("");
+    void fetchPlantations("", "");
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-lg p-6">
-      <h2 className="text-2xl font-bold text-gray-800 mb-6">Daftar Kebun Sawit</h2>
-
-      {/* Filters */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-        <input
-          type="text"
-          name="name"
-          placeholder="Cari nama kebun..."
-          value={filters.name ?? ""}
-          onChange={handleChange}
-          className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-        />
-        <input
-          type="text"
-          name="code"
-          placeholder="Cari kode kebun..."
-          value={filters.code ?? ""}
-          onChange={handleChange}
-          className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-        />
-      </div>
-      <div className="flex justify-end mb-6">
-        <Button
+    <div>
+      {/* Header */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 24 }}>
+        <div>
+          <h1
+            style={{
+              fontFamily: "'Poppins', sans-serif",
+              fontWeight: 700,
+              fontSize: 50,
+              color: "#5B2012",
+              margin: 0,
+              lineHeight: 1.1,
+            }}
+          >
+            Plantations
+          </h1>
+          <p
+            style={{
+              fontFamily: "'Lato', sans-serif",
+              fontWeight: 400,
+              fontSize: 16,
+              color: "#52443D",
+              margin: "8px 0 0",
+            }}
+          >
+            Manage all registered plantations
+          </p>
+        </div>
+        <button
           type="button"
-          variant="secondary"
-          onClick={handleReset}
-          disabled={!filters.name && !filters.code}
+          onClick={() => router.push("/admin/plantations/create")}
+          style={{
+            background: "#BB7354",
+            borderRadius: 9999,
+            padding: "10px 24px",
+            fontFamily: "'Lato', sans-serif",
+            fontWeight: 700,
+            fontSize: 14,
+            color: "#FFFFFF",
+            border: "none",
+            cursor: "pointer",
+          }}
         >
-          Reset Filter
-        </Button>
+          + New Plantation
+        </button>
       </div>
+
+      {/* Filter bar */}
+      <div style={{ display: "flex", gap: 12, marginBottom: 24, alignItems: "center" }}>
+        <div style={{ position: "relative", width: 300 }}>
+          <svg
+            style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "#8A4B2F" }}
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+          >
+            <circle cx="11" cy="11" r="8" />
+            <path d="m21 21-4.35-4.35" />
+          </svg>
+          <input
+            type="text"
+            value={nameFilter}
+            onChange={(e) => handleNameChange(e.target.value)}
+            placeholder="Search by name..."
+            style={{
+              width: "100%",
+              height: 46,
+              background: "#FFFFFF",
+              border: "1px solid rgba(91,32,18,0.1)",
+              borderRadius: 10,
+              padding: "0 16px 0 38px",
+              fontFamily: "'Lato', sans-serif",
+              fontSize: 14,
+              color: "#1B1C1B",
+              outline: "none",
+              boxSizing: "border-box",
+            }}
+          />
+        </div>
+
+        <div style={{ position: "relative", width: 200 }}>
+          <svg
+            style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "#8A4B2F" }}
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+          >
+            <circle cx="11" cy="11" r="8" />
+            <path d="m21 21-4.35-4.35" />
+          </svg>
+          <input
+            type="text"
+            value={codeFilter}
+            onChange={(e) => handleCodeChange(e.target.value)}
+            placeholder="Search by code..."
+            style={{
+              width: "100%",
+              height: 46,
+              background: "#FFFFFF",
+              border: "1px solid rgba(91,32,18,0.1)",
+              borderRadius: 10,
+              padding: "0 16px 0 38px",
+              fontFamily: "'Lato', sans-serif",
+              fontSize: 14,
+              color: "#1B1C1B",
+              outline: "none",
+              boxSizing: "border-box",
+            }}
+          />
+        </div>
+
+        <button
+          type="button"
+          onClick={handleReset}
+          style={{
+            background: "#FFFFFF",
+            border: "1px solid #DBC1B9",
+            borderRadius: 8,
+            padding: "8px 16px",
+            fontFamily: "'Lato', sans-serif",
+            fontSize: 14,
+            color: "#52443D",
+            cursor: "pointer",
+          }}
+        >
+          Reset
+        </button>
+      </div>
+
+      {/* Error */}
+      {error && (
+        <div
+          style={{
+            background: "rgba(186,26,26,0.08)",
+            border: "1px solid rgba(186,26,26,0.2)",
+            borderRadius: 8,
+            padding: "12px 16px",
+            marginBottom: 16,
+            fontFamily: "'Lato', sans-serif",
+            fontSize: 14,
+            color: "#BA1A1A",
+          }}
+        >
+          {error}
+        </div>
+      )}
 
       {/* Table */}
-      <div className="overflow-x-auto">
-        {isLoading ? (
-          <div className="flex justify-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600" />
-          </div>
-        ) : plantations.length === 0 ? (
-          <p className="text-center py-12 text-gray-500">Tidak ada kebun ditemukan</p>
-        ) : (
-          <table className="w-full">
-            <thead>
-              <tr className="border-b-2 border-gray-300">
-                <th className="text-left px-4 py-3 font-semibold text-gray-700">Nama</th>
-                <th className="text-left px-4 py-3 font-semibold text-gray-700">Kode</th>
-                <th className="text-right px-4 py-3 font-semibold text-gray-700">Luas (ha)</th>
-                <th className="text-center px-4 py-3 font-semibold text-gray-700">Mandor</th>
-                <th className="text-center px-4 py-3 font-semibold text-gray-700">Aksi</th>
+      <div
+        style={{
+          background: "#FFFFFF",
+          border: "1px solid #DBC1B9",
+          borderRadius: 12,
+          overflow: "hidden",
+          boxShadow: "0px 4px 20px rgba(91,32,18,0.06)",
+        }}
+      >
+        <table style={{ width: "100%", borderCollapse: "collapse" }}>
+          <thead>
+            <tr style={{ background: "#F6F3F1" }}>
+              {["Name", "Code", "Area (Ha)", "Mandor", "Actions"].map((col) => (
+                <th
+                  key={col}
+                  style={{
+                    padding: "14px 20px",
+                    fontFamily: "'Lato', sans-serif",
+                    fontWeight: 700,
+                    fontSize: 14,
+                    color: "#52443D",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.7px",
+                    textAlign: col === "Actions" ? "right" : "left",
+                  }}
+                >
+                  {col}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {loading ? (
+              <tr>
+                <td
+                  colSpan={5}
+                  style={{ padding: 40, textAlign: "center", color: "#52443D", fontFamily: "'Lato', sans-serif" }}
+                >
+                  Loading...
+                </td>
               </tr>
-            </thead>
-            <tbody>
-              {plantations.map((p) => (
-                <tr key={p.id} className="border-b border-gray-200 hover:bg-gray-50">
-                  <td className="px-4 py-3 font-semibold text-gray-900">{p.name}</td>
-                  <td className="px-4 py-3 text-gray-600 font-mono text-sm">{p.code}</td>
-                  <td className="px-4 py-3 text-right text-gray-700">{p.area}</td>
-                  <td className="px-4 py-3 text-center">
-                    {p.mandor ? (
-                      <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-semibold">
-                        {p.mandor.name}
+            ) : plantations.length === 0 ? (
+              <tr>
+                <td
+                  colSpan={5}
+                  style={{ padding: 40, textAlign: "center", color: "#52443D", fontFamily: "'Lato', sans-serif" }}
+                >
+                  No plantations found.
+                </td>
+              </tr>
+            ) : (
+              plantations.map((p) => (
+                <tr key={p.id} style={{ borderTop: "1px solid #DBC1B9" }}>
+                  <td style={{ padding: "16px 20px" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                      <div
+                        style={{
+                          width: 40,
+                          height: 40,
+                          background: "#EDE8E4",
+                          border: "1px solid #DBC1B9",
+                          borderRadius: 8,
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          fontFamily: "'Lato', sans-serif",
+                          fontWeight: 700,
+                          fontSize: 14,
+                          color: "#5B2012",
+                          flexShrink: 0,
+                        }}
+                      >
+                        {p.name.charAt(0).toUpperCase()}
+                      </div>
+                      <span
+                        style={{
+                          fontFamily: "'Lato', sans-serif",
+                          fontWeight: 700,
+                          fontSize: 16,
+                          color: "#5B2012",
+                        }}
+                      >
+                        {p.name}
                       </span>
-                    ) : (
-                      <span className="px-2 py-1 bg-gray-100 text-gray-500 rounded-full text-xs">
-                        Belum ada
-                      </span>
-                    )}
+                    </div>
                   </td>
-                  <td className="px-4 py-3 text-center">
-                    <Button
-                      variant="primary"
-                      onClick={() => onSelect?.(p)}
-                      className="px-3 py-1 text-xs"
+                  <td style={{ padding: "16px 20px" }}>
+                    <PlantationCodeBadge code={p.code} />
+                  </td>
+                  <td style={{ padding: "16px 20px" }}>
+                    <span style={{ fontFamily: "'Lato', sans-serif", fontWeight: 400, fontSize: 16, color: "#53433D" }}>
+                      {p.area} ha
+                    </span>
+                  </td>
+                  <td style={{ padding: "16px 20px" }}>
+                    <MandorBadge name={p.mandorName ?? null} />
+                  </td>
+                  <td style={{ padding: "16px 20px", textAlign: "right" }}>
+                    <button
+                      type="button"
+                      onClick={() => router.push(`/admin/plantations/${p.id}`)}
+                      style={{
+                        fontFamily: "'Lato', sans-serif",
+                        fontWeight: 700,
+                        fontSize: 14,
+                        color: "#854E31",
+                        background: "transparent",
+                        border: "none",
+                        cursor: "pointer",
+                      }}
                     >
-                      Detail
-                    </Button>
+                      Detail →
+                    </button>
                   </td>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
+              ))
+            )}
+          </tbody>
+        </table>
       </div>
     </div>
   );

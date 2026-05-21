@@ -80,11 +80,28 @@ export default function AssignmentList({
   const isLoading = loading || externalLoading;
 
   return (
-    <div className="bg-white rounded-lg shadow-lg p-6">
+    <div
+      style={{
+        background: "#FFFFFF",
+        border: "1px solid #DBC1B9",
+        borderRadius: 12,
+        boxShadow: "0px 4px 20px rgba(91,32,18,0.06)",
+        padding: 28,
+      }}
+    >
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-gray-800">Daftar Assignment</h2>
+        <h2
+          style={{
+            fontFamily: "'Lato', sans-serif",
+            fontWeight: 700,
+            fontSize: 16,
+            color: "#5B2012",
+          }}
+        >
+          Daftar Assignment
+        </h2>
         <Button
-          variant="primary"
+          variant="secondary"
           onClick={loadAssignments}
           disabled={isLoading}
         >
@@ -93,7 +110,18 @@ export default function AssignmentList({
       </div>
 
       {error && (
-        <div className="bg-red-50 border border-red-300 text-red-800 text-sm p-3 rounded mb-4">
+        <div
+          className="mb-4"
+          style={{
+            background: "rgba(186,26,26,0.08)",
+            border: "1px solid rgba(186,26,26,0.2)",
+            borderRadius: 8,
+            padding: "12px 16px",
+            fontFamily: "'Lato', sans-serif",
+            fontSize: 14,
+            color: "#BA1A1A",
+          }}
+        >
           {error}
         </div>
       )}
@@ -101,26 +129,28 @@ export default function AssignmentList({
       <div className="overflow-x-auto">
         {isLoading ? (
           <div className="flex justify-center items-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
+            <div style={{ fontFamily: "'Lato', sans-serif", fontSize: 16, color: "#53433D" }}>
+              Memuat assignment...
+            </div>
           </div>
         ) : assignments.length === 0 ? (
-          <div className="text-center py-12 text-gray-500">
+          <div className="text-center py-12" style={{ color: "#53433D" }}>
             <p>Tidak ada assignment ditemukan</p>
           </div>
         ) : (
           <table className="w-full">
             <thead>
-              <tr className="border-b-2 border-gray-300">
-                <th className="text-left px-4 py-3 font-semibold text-gray-700">
+              <tr style={{ background: "#F6F3F1", borderBottom: "1px solid #DBC1B9" }}>
+                <th className="text-left px-4 py-3" style={{ color: "#52443D", fontWeight: 700, fontSize: 14, letterSpacing: 0.7 }}>
                   Buruh
                 </th>
-                <th className="text-left px-4 py-3 font-semibold text-gray-700">
+                <th className="text-left px-4 py-3" style={{ color: "#52443D", fontWeight: 700, fontSize: 14, letterSpacing: 0.7 }}>
                   Mandor
                 </th>
-                <th className="text-center px-4 py-3 font-semibold text-gray-700">
+                <th className="text-center px-4 py-3" style={{ color: "#52443D", fontWeight: 700, fontSize: 14, letterSpacing: 0.7 }}>
                   Tanggal Dibuat
                 </th>
-                <th className="text-center px-4 py-3 font-semibold text-gray-700">
+                <th className="text-center px-4 py-3" style={{ color: "#52443D", fontWeight: 700, fontSize: 14, letterSpacing: 0.7 }}>
                   Aksi
                 </th>
               </tr>
@@ -129,16 +159,18 @@ export default function AssignmentList({
               {assignments.map((assignment) => (
                 <tr
                   key={assignment.id}
-                  className="border-b border-gray-200 hover:bg-gray-50"
+                  style={{ borderBottom: "1px solid #DBC1B9" }}
                 >
-                  <td className="px-4 py-3 text-gray-800">
-                    {assignment.buruhName}
+                  <td className="px-4 py-3" style={{ color: "#1B1C1B", fontWeight: 600 }}>
+                    {assignment.buruhName || assignment.buruhNama || assignment.buruhId}
                   </td>
-                  <td className="px-4 py-3 text-gray-800">
-                    {assignment.mandorName}
+                  <td className="px-4 py-3" style={{ color: "#1B1C1B", fontWeight: 600 }}>
+                    {assignment.mandorName || assignment.mandorNama || assignment.mandorId}
                   </td>
-                  <td className="px-4 py-3 text-gray-600 text-center">
-                    {new Date(assignment.createdAt).toLocaleDateString("id-ID")}
+                  <td className="px-4 py-3 text-center" style={{ color: "#53433D" }}>
+                    {assignment.createdAt || assignment.assignedAt
+                      ? new Date(assignment.createdAt || assignment.assignedAt || "").toLocaleDateString("id-ID")
+                      : "-"}
                   </td>
                   <td className="px-4 py-3 text-center">
                     <div className="flex gap-2 justify-center">

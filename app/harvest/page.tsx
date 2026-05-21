@@ -1,5 +1,5 @@
-import HarvestForm from "@/features/harvest/components/HarvestForm";
+import { redirect } from "next/navigation";
 
 export default function HarvestPage() {
-  return <HarvestForm />;
+  redirect("/buruh/harvest");
 }

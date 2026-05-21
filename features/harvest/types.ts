@@ -1,5 +1,3 @@
-export type HarvestStatus = "PENDING" | "APPROVED" | "REJECTED";
-
 export interface HarvestCreateRequest {
   weightKg: number;
   notes: string;
@@ -9,35 +7,16 @@ export interface HarvestResponse {
   id: string;
   plantationId: string;
   buruhId: string;
-  buruhName?: string | null;
+  buruhName: string;
   weightKg: number;
   notes: string;
-  status: HarvestStatus;
-  rejectionReason?: string | null;
-  harvestDate?: string;
-  createdAt?: string;
-  reviewedAt?: string | null;
+  harvestDate: string;
+  status: string;
+  submittedAt: string;
   photoUrls?: string[];
 }
 
-export interface HarvestPageResponse {
-  content: HarvestResponse[];
-  page: number;
-  size: number;
-  totalElements: number;
-  totalPages: number;
-}
-
-export interface HarvestHistoryFilters {
-  startDate?: string;
-  endDate?: string;
-  status?: HarvestStatus | "";
-  buruhName?: string;
-  page?: number;
-  size?: number;
-}
-
 export interface ApiSuccessResponse<T> {
-  status: "success";
+  status: string;
   data: T;
 }

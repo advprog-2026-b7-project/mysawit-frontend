@@ -8,14 +8,14 @@ import { ChevronRightIcon } from "@/components/layout/AdminIcons";
 type IconComponent = (props: SVGProps<SVGSVGElement>) => ReactNode;
 
 const badgeStyles: Record<string, string> = {
-  PENDING: "bg-[#FFF7EE] text-[#D98A45]",
-  APPROVED: "bg-[#F1F7EA] text-[#5E7D42]",
+  PENDING: "bg-[rgba(138,75,47,0.1)] text-[#8A4B2F]",
+  APPROVED: "bg-[#FFA088] text-[#793423]",
   ACTIVE: "bg-[#A26647] text-white",
-  COMPLETED: "bg-[#EAF4E6] text-[#5E7D42]",
+  COMPLETED: "bg-[#EDE8E4] text-[#5B2012]",
   REJECTED: "bg-[#FFF1EC] text-[#7C2516]",
   PROCESSING: "bg-[#F9EBE6] text-[#53433D]",
   ASSIGNED: "bg-[#FFF7EE] text-[#8A4B2F]",
-  "IN TRANSIT": "bg-[#F1F7EA] text-[#5E7D42]",
+  "IN TRANSIT": "bg-[#EDE8E4] text-[#5B2012]",
 };
 
 export function DashboardHeader({ greeting }: { greeting: string }) {
@@ -58,7 +58,7 @@ export function DashboardStatCard({
 }) {
   const toneClass = {
     beige: "bg-[#FBF4EA] text-[#DB8D45]",
-    green: "bg-[#EEF6EA] text-[#5E7D42]",
+    green: "bg-[#FFF1EC] text-[#8A4B2F]",
     pink: "bg-[#F6E9E6] text-[#7C2516]",
   }[tone];
 
@@ -99,7 +99,7 @@ export function DashboardFeatureCard({
   children?: ReactNode;
 }) {
   const router = useRouter();
-  const iconBg = iconTone === "green" ? "bg-[#EEF6EA] text-[#6C8B4F]" : "bg-[#F3E8E5] text-[#9A5134]";
+  const iconBg = iconTone === "green" ? "bg-[#FFF1EC] text-[#8A4B2F]" : "bg-[#F3E8E5] text-[#9A5134]";
 
   return (
     <button
@@ -128,20 +128,30 @@ export function DashboardFeatureCard({
 export function DashboardTable({
   title,
   actionLabel,
+  actionHref,
   columns,
   rows,
+  emptyLabel = "No data found.",
 }: {
   title: string;
   actionLabel?: string;
+  actionHref?: string;
   columns: string[];
   rows: Array<Array<ReactNode>>;
+  emptyLabel?: string;
 }) {
+  const router = useRouter();
+
   return (
     <section className="overflow-hidden rounded-[12px] border border-[var(--color-border)] bg-white">
       <div className="flex items-center justify-between border-b border-[var(--color-border)] px-8 py-7">
         <h2 className="admin-heading text-[24px] font-semibold text-[#6D2615]">{title}</h2>
         {actionLabel && (
-          <button type="button" className="text-[16px] font-bold text-[#8A4B2F]">
+          <button
+            type="button"
+            onClick={() => actionHref && router.push(actionHref)}
+            className="text-[16px] font-bold text-[#8A4B2F]"
+          >
             {actionLabel}
           </button>
         )}
@@ -160,18 +170,29 @@ export function DashboardTable({
           </tr>
         </thead>
         <tbody>
-          {rows.map((row, index) => (
-            <tr key={index} className="border-t border-[#F0E4E0]">
-              {row.map((cell, cellIndex) => (
-                <td
-                  key={`${index}-${cellIndex}`}
-                  className="px-8 py-5 text-[16px] font-semibold text-[var(--color-text-body)]"
-                >
-                  {cell}
-                </td>
-              ))}
+          {rows.length === 0 ? (
+            <tr className="border-t border-[#F0E4E0]">
+              <td
+                colSpan={columns.length}
+                className="px-8 py-10 text-center text-[16px] font-semibold text-[var(--color-text-body)]"
+              >
+                {emptyLabel}
+              </td>
             </tr>
-          ))}
+          ) : (
+            rows.map((row, index) => (
+              <tr key={index} className="border-t border-[#F0E4E0]">
+                {row.map((cell, cellIndex) => (
+                  <td
+                    key={`${index}-${cellIndex}`}
+                    className="px-8 py-5 text-[16px] font-semibold text-[var(--color-text-body)]"
+                  >
+                    {cell}
+                  </td>
+                ))}
+              </tr>
+            ))
+          )}
         </tbody>
       </table>
     </section>

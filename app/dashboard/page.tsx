@@ -11,7 +11,7 @@ export default function DashboardRedirectPage() {
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) {
-      router.replace("/login");
+      router.replace("/auth/login");
       return;
     }
 
@@ -21,7 +21,7 @@ export default function DashboardRedirectPage() {
         router.replace(dashboardPathForRole(me.role));
       } catch {
         localStorage.removeItem("token");
-        router.replace("/login");
+        router.replace("/auth/login");
       }
     }
 

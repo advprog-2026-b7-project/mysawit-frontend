@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import AdminLayout from "@/components/layout/AdminLayout";
 import {
   CheckCircleIcon,
@@ -14,16 +15,56 @@ import {
   DashboardHeader,
   DashboardStatCard,
 } from "@/components/dashboard/DashboardComponents";
+import { harvestHistoryClient } from "@/features/harvest/historyApi";
+import { getAssignmentsByMandorApi } from "@/features/profile/api";
 import { useRoleDashboard } from "@/features/admin/useRoleDashboard";
+
+function currentMonthStart() {
+  const now = new Date();
+  return new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0, 10);
+}
 
 export default function MandorDashboardPage() {
   const { user, loading } = useRoleDashboard("MANDOR");
+  const [stats, setStats] = useState({ pendingReviews: 0, approvedThisMonth: 0, teamMembers: 0 });
+  const [summaryError, setSummaryError] = useState<string | null>(null);
   const displayName = user?.nama || user?.username || "Mandor";
 
-  // TODO: Replace placeholders with harvest review, shipment, and team endpoints.
-  const pendingReviews = 2;
-  const activeShipments = 14;
-  const teamMembers = 1;
+  useEffect(() => {
+    if (!user) return;
+    const userId = user.id;
+    let active = true;
+
+    async function loadSummary() {
+      setSummaryError(null);
+      try {
+        const [pendingReviews, approvedThisMonth, assignments] = await Promise.all([
+          harvestHistoryClient.getHarvestCount({ status: "PENDING" }),
+          harvestHistoryClient.getHarvestCount({
+            status: "APPROVED",
+            startDate: currentMonthStart(),
+          }),
+          getAssignmentsByMandorApi(userId).catch(() => []),
+        ]);
+
+        if (!active) return;
+        setStats({
+          pendingReviews,
+          approvedThisMonth,
+          teamMembers: assignments.length,
+        });
+      } catch (err) {
+        if (!active) return;
+        setSummaryError(err instanceof Error ? err.message : "Failed to load dashboard summary.");
+      }
+    }
+
+    void loadSummary();
+
+    return () => {
+      active = false;
+    };
+  }, [user]);
 
   if (loading) {
     return (
@@ -38,24 +79,40 @@ export default function MandorDashboardPage() {
       <div className="mx-auto flex max-w-[1280px] flex-col gap-12">
         <DashboardHeader greeting={`Good morning, ${displayName}!`} />
 
+        {summaryError && (
+          <div
+            style={{
+              background: "rgba(186,26,26,0.08)",
+              border: "1px solid rgba(186,26,26,0.2)",
+              borderRadius: 8,
+              padding: "12px 16px",
+              fontFamily: "'Lato', sans-serif",
+              fontSize: 14,
+              color: "#BA1A1A",
+            }}
+          >
+            {summaryError}
+          </div>
+        )}
+
         <section className="grid grid-cols-3 gap-8">
           <DashboardStatCard
             title="Pending Harvest Reviews"
-            value={pendingReviews}
+            value={stats.pendingReviews}
             badge="PENDING"
             Icon={ClockIcon}
             tone="beige"
           />
           <DashboardStatCard
-            title="Active Shipments"
-            value={activeShipments}
+            title="Approved harvests this month"
+            value={stats.approvedThisMonth}
             badge="APPROVED"
             Icon={CheckCircleIcon}
             tone="green"
           />
           <DashboardStatCard
             title="Team Members"
-            value={teamMembers}
+            value={stats.teamMembers}
             Icon={UsersIcon}
             tone="pink"
           />
@@ -65,7 +122,7 @@ export default function MandorDashboardPage() {
           <DashboardFeatureCard
             title="Harvest Review"
             subtitle="Approve daily yields"
-            badge="5 Pending"
+            badge={`${stats.pendingReviews} Pending`}
             href="/mandor/harvest-review"
             Icon={LeafIcon}
           />
@@ -79,7 +136,7 @@ export default function MandorDashboardPage() {
           <DashboardFeatureCard
             title="My Team"
             subtitle="Manage field workers"
-            badge="8 Members"
+            badge={`${stats.teamMembers} Members`}
             href="/mandor/team"
             Icon={UsersIcon}
             iconTone="green"

@@ -13,7 +13,6 @@ import {
   DashboardFeatureCard,
   DashboardHeader,
   DashboardStatCard,
-  DashboardTable,
 } from "@/components/dashboard/DashboardComponents";
 import { useRoleDashboard } from "@/features/admin/useRoleDashboard";
 import WorkerPayrollSection from "@/features/payment/components/WorkerPayrollSection";
@@ -85,13 +84,6 @@ export default function SupirDashboardPage() {
             Icon={UserIcon}
           />
         </section>
-
-        <DashboardTable
-          title="Today's Shipments"
-          columns={["PICKUP", "DESTINATION", "LOAD", "STATUS"]}
-          rows={[]}
-          emptyLabel="Shipment history is not available yet."
-        />
 
         {user && (
           <WorkerPayrollSection

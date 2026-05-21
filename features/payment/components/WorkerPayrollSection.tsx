@@ -1,9 +1,11 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useWorkerPayroll } from '@/features/payment/hooks';
 import { PayrollCard } from '@/features/payment/components';
-import type { Payroll, PayrollStatus } from '@/features/payment/types';
+import { DashboardStatCard } from '@/components/dashboard/DashboardComponents';
+import { CheckCircleIcon, ClockIcon, WalletIcon } from '@/components/layout/AdminIcons';
+import type { PayrollStatus } from '@/features/payment/types';
 
 interface WorkerPayrollSectionProps {
   userId: string;
@@ -17,15 +19,13 @@ const WorkerPayrollSection: React.FC<WorkerPayrollSectionProps> = ({
   workerName,
 }) => {
   const { payrolls, loading, error } = useWorkerPayroll(userId);
-  const [displayCount, setDisplayCount] = useState(3); // Show first 3 payrolls
+  const [displayCount, setDisplayCount] = useState(3);
   const [selectedStatus, setSelectedStatus] = useState<PayrollStatus | 'ALL'>('ALL');
 
-  // Filter payrolls by status
   const filteredPayrolls = payrolls.filter(
     (p) => selectedStatus === 'ALL' || p.status === selectedStatus
   );
 
-  // Get stats
   const totalAmount = payrolls.reduce((sum, p) => sum + p.amount, 0);
   const pendingAmount = payrolls
     .filter((p) => p.status === 'PENDING')
@@ -42,94 +42,126 @@ const WorkerPayrollSection: React.FC<WorkerPayrollSectionProps> = ({
     }).format(value);
   };
 
-  const getWorkerTypeLabel = (type: string) => {
-    const labels: Record<string, string> = {
-      BURUH: 'Buruh',
-      SUPIR_TRUK: 'Supir Truk',
-      MANDOR: 'Mandor',
-    };
-    return labels[type] || type;
-  };
-
   return (
-    <section className="bg-white rounded-lg shadow-lg p-6 space-y-6">
+    <div className="space-y-8">
       {/* Header */}
-      <div className="flex justify-between items-start">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-800">💰 Penggajian Saya</h2>
-          <p className="text-sm text-gray-600 mt-1">
-            Tipe Pekerja: <span className="font-semibold">{getWorkerTypeLabel(workerType)}</span>
-          </p>
-        </div>
+      <div className="flex items-center justify-between">
+        <h2 className="admin-heading text-[32px] font-bold text-[#6D2615]">Penggajian Saya</h2>
         <a
           href="/payment/payroll"
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-sm font-semibold"
+          className="rounded-lg px-6 py-3 font-bold text-[#854E31] transition hover:bg-[#FBF4EA]"
+          style={{
+            background: "#FFFFFF",
+            border: "1px solid #DBC1B9",
+          }}
         >
-          Lihat Semua →
+          Lihat Semua
         </a>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-3 gap-4">
-        <div className="bg-gradient-to-br from-blue-400 to-blue-600 rounded-lg p-4 text-white">
-          <p className="text-sm opacity-90">Total Pendapatan</p>
-          <p className="text-xl font-bold">{formatRupiah(totalAmount)}</p>
-          <p className="text-xs opacity-75 mt-1">{payrolls.length} Penggajian</p>
-        </div>
-        <div className="bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-lg p-4 text-white">
-          <p className="text-sm opacity-90">Menunggu Persetujuan</p>
-          <p className="text-xl font-bold">{formatRupiah(pendingAmount)}</p>
-          <p className="text-xs opacity-75 mt-1">
-            {payrolls.filter((p) => p.status === 'PENDING').length} Penggajian
-          </p>
-        </div>
-        <div className="bg-gradient-to-br from-green-400 to-green-600 rounded-lg p-4 text-white">
-          <p className="text-sm opacity-90">Sudah Disetujui</p>
-          <p className="text-xl font-bold">{formatRupiah(approvedAmount)}</p>
-          <p className="text-xs opacity-75 mt-1">
-            {payrolls.filter((p) => p.status === 'APPROVED').length} Penggajian
-          </p>
-        </div>
-      </div>
+      {/* Stats Cards */}
+      <section className="grid grid-cols-3 gap-8">
+        <DashboardStatCard
+          title="Total Pendapatan"
+          value={formatRupiah(totalAmount)}
+          Icon={WalletIcon}
+          tone="beige"
+          subtitle={`${payrolls.length} Penggajian`}
+        />
+        <DashboardStatCard
+          title="Menunggu Persetujuan"
+          value={formatRupiah(pendingAmount)}
+          Icon={ClockIcon}
+          tone="beige"
+          subtitle={`${payrolls.filter((p) => p.status === 'PENDING').length} Penggajian`}
+        />
+        <DashboardStatCard
+          title="Sudah Disetujui"
+          value={formatRupiah(approvedAmount)}
+          Icon={CheckCircleIcon}
+          tone="green"
+          subtitle={`${payrolls.filter((p) => p.status === 'APPROVED').length} Penggajian`}
+        />
+      </section>
 
       {/* Error */}
       {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+        <div
+          style={{
+            background: "rgba(186,26,26,0.08)",
+            border: "1px solid rgba(186,26,26,0.2)",
+            borderRadius: 8,
+            padding: "12px 16px",
+            fontFamily: "'Lato', sans-serif",
+            fontSize: 14,
+            color: "#BA1A1A",
+          }}
+        >
           {error}
         </div>
       )}
 
       {/* Status Filter */}
-      <div className="flex gap-2 flex-wrap">
-        {['ALL', 'PENDING', 'APPROVED', 'REJECTED'].map((status) => (
-          <button
-            key={status}
-            onClick={() => setSelectedStatus(status as PayrollStatus | 'ALL')}
-            className={`px-3 py-1 rounded-full text-sm font-medium transition ${
-              selectedStatus === status
-                ? 'bg-blue-600 text-white'
-                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-            }`}
-          >
-            {status === 'ALL'
-              ? 'Semua'
-              : status === 'PENDING'
-                ? 'Menunggu'
-                : status === 'APPROVED'
-                  ? 'Disetujui'
-                  : 'Ditolak'}
-          </button>
-        ))}
+      <div className="space-y-4">
+        <p
+          style={{
+            fontFamily: "'Lato', sans-serif",
+            fontWeight: 700,
+            fontSize: 14,
+            color: "#52443D",
+            letterSpacing: 0.6,
+            textTransform: "uppercase",
+          }}
+        >
+          Filter Status
+        </p>
+        <div className="flex gap-2 flex-wrap">
+          {['ALL', 'PENDING', 'APPROVED', 'REJECTED'].map((status) => (
+            <button
+              key={status}
+              onClick={() => setSelectedStatus(status as PayrollStatus | 'ALL')}
+              className={`px-4 py-2 rounded-lg text-sm font-semibold transition ${
+                selectedStatus === status
+                  ? 'text-white'
+                  : 'bg-[#FBF4EA] text-[#8A4B2F] hover:bg-[#F3E8E5]'
+              }`}
+              style={
+                selectedStatus === status
+                  ? {
+                      background: "#A35A3A",
+                      color: "white",
+                    }
+                  : {}
+              }
+            >
+              {status === 'ALL'
+                ? 'Semua'
+                : status === 'PENDING'
+                  ? 'Menunggu'
+                  : status === 'APPROVED'
+                    ? 'Disetujui'
+                    : 'Ditolak'}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Payroll List */}
       {loading ? (
         <div className="flex justify-center py-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-[#A35A3A]"></div>
         </div>
       ) : filteredPayrolls.length === 0 ? (
-        <div className="text-center py-8 bg-gray-50 rounded-lg">
-          <p className="text-gray-500 text-sm">Belum ada penggajian</p>
+        <div
+          className="text-center py-8 rounded-lg"
+          style={{
+            background: "#FBF4EA",
+            border: "1px dashed #DBC1B9",
+          }}
+        >
+          <p style={{ fontSize: 14, color: "#53433D", fontWeight: 600 }}>
+            Belum ada penggajian
+          </p>
         </div>
       ) : (
         <div className="space-y-3">
@@ -141,27 +173,22 @@ const WorkerPayrollSection: React.FC<WorkerPayrollSectionProps> = ({
             />
           ))}
 
-          {/* Show More Button */}
           {filteredPayrolls.length > displayCount && (
             <button
               onClick={() => setDisplayCount((prev) => prev + 3)}
-              className="w-full py-2 text-blue-600 hover:text-blue-700 font-semibold text-sm border border-blue-600 rounded-lg hover:bg-blue-50 transition"
+              className="w-full py-3 font-bold text-sm transition rounded-lg"
+              style={{
+                background: "#FFFFFF",
+                border: "1px solid #DBC1B9",
+                color: "#A35A3A",
+              }}
             >
-              Tampilkan 3 Lebih Banyak...
+              Tampilkan 3 Lebih Banyak
             </button>
           )}
         </div>
       )}
-
-      {/* Info Box */}
-      <div className="bg-blue-50 border-l-4 border-blue-600 p-4 rounded">
-        <p className="text-sm text-blue-800">
-          <strong>ℹ️ Info:</strong> Penggajian dibuat otomatis saat panen atau pengiriman disetujui.
-          Status default adalah <strong>Menunggu Persetujuan</strong>. Setelah Admin menyetujui, 
-          gaji Anda akan ditransfer.
-        </p>
-      </div>
-    </section>
+    </div>
   );
 };
 

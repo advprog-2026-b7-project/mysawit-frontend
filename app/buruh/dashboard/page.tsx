@@ -11,6 +11,7 @@ import {
   XCircleIcon,
 } from "@/components/layout/AdminIcons";
 import {
+  DashboardFeatureCard,
   DashboardHeader,
   DashboardStatCard,
   DashboardTable,
@@ -102,9 +103,7 @@ export default function BuruhDashboardPage() {
   if (loading) {
     return (
       <AdminLayout activePage="Dashboard" currentUser={user}>
-        <div style={{ fontFamily: "'Lato', sans-serif", fontSize: 16, color: "#53433D" }}>
-          Loading dashboard...
-        </div>
+        <div className="text-[16px] text-[var(--color-text-body)]">Loading dashboard...</div>
       </AdminLayout>
     );
   }
@@ -113,7 +112,7 @@ export default function BuruhDashboardPage() {
 
   return (
     <AdminLayout activePage="Dashboard" currentUser={user}>
-      <div className="mx-auto flex max-w-[1280px] flex-col gap-10">
+      <div className="mx-auto flex max-w-[1280px] flex-col gap-12">
         <DashboardHeader greeting={`Good morning, ${displayName}!`} />
 
         <section

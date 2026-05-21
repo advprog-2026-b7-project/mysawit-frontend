@@ -10,7 +10,28 @@ export const PAYMENT_ROUTES = {
     wallet: '/admin/payment?tab=wallet',
   },
 
-  // Worker Routes
+  // Worker (Buruh) Routes
+  buruh: {
+    payroll: '/buruh/payroll',
+    payrollStats: '/buruh/payroll?tab=stats',
+    payrollList: '/buruh/payroll?tab=list',
+  },
+
+  // Mandor Routes
+  mandor: {
+    payroll: '/mandor/payroll',
+    payrollOverview: '/mandor/payroll?tab=overview',
+    teamPayroll: '/mandor/payroll?tab=team',
+  },
+
+  // Supir Routes
+  supir: {
+    payroll: '/supir/payroll',
+    payrollStats: '/supir/payroll?tab=stats',
+    payrollList: '/supir/payroll?tab=list',
+  },
+
+  // Generic Worker Routes (legacy)
   worker: {
     payroll: '/payment/payroll',
     payrollStats: '/payment/payroll?tab=stats',

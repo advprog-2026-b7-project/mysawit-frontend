@@ -17,7 +17,6 @@ export const googleLoginApi = async (idToken: string) => {
 };
 
 export const logoutApi = async () => {
-  const token = typeof window !== "undefined" ? localStorage.getItem("token") ?? "" : "";
-  const res = await authClient.post("/api/auth/logout", { token });
+  const res = await authClient.post("/api/auth/logout", {});
   return res.data;
 };

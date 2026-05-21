@@ -9,19 +9,12 @@ export default function DashboardRedirectPage() {
   const router = useRouter();
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      router.replace("/auth/login");
-      return;
-    }
-
     async function redirectToRoleDashboard() {
       try {
         const me = await getMe();
         router.replace(dashboardPathForRole(me.role));
       } catch {
-        localStorage.removeItem("token");
-        router.replace("/auth/login");
+        router.replace("/login");
       }
     }
 

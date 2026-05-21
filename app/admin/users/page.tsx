@@ -125,12 +125,6 @@ export default function AdminUsersPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      router.push("/auth/login");
-      return;
-    }
-
     async function checkAccess() {
       try {
         const me = await getMe();
@@ -140,8 +134,7 @@ export default function AdminUsersPage() {
         }
         setAuthorized(true);
       } catch {
-        localStorage.removeItem("token");
-        router.push("/auth/login");
+        router.push("/login");
       }
     }
 

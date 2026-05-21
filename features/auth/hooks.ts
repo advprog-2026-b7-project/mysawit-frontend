@@ -1,28 +1,8 @@
+"use client";
+
 import { useState } from "react";
 import { loginApi, registerApi, googleLoginApi, logoutApi } from "./api";
 import type { LoginRequest, RegisterRequest } from "./types";
-
-/**
- * Extract the JWT token from the login/register response.
- * Handles multiple backend response shapes:
- *   { token: "..." }
- *   { accessToken: "..." }
- *   { data: { token: "..." } }
- */
-function extractToken(res: Record<string, unknown>): string | null {
-  if (typeof res.token === "string" && res.token) return res.token;
-  if (typeof res.accessToken === "string" && res.accessToken) return res.accessToken;
-  if (typeof res.jwt === "string" && res.jwt) return res.jwt;
-  if (
-    res.data &&
-    typeof res.data === "object" &&
-    "token" in res.data &&
-    typeof (res.data as Record<string, unknown>).token === "string"
-  ) {
-    return (res.data as Record<string, unknown>).token as string;
-  }
-  return null;
-}
 
 export function useLogin() {
   const [loading, setLoading] = useState(false);
@@ -31,30 +11,8 @@ export function useLogin() {
   const login = async (data: LoginRequest) => {
     setLoading(true);
     setError(null);
-
     try {
-      const res = await loginApi(data);
-
-      console.log("LOGIN RESPONSE:", JSON.stringify(res));
-
-      const token = extractToken(res as Record<string, unknown>);
-
-      if (!token) {
-        throw new Error(
-          "No token found in server response. Check backend response format."
-        );
-      }
-
-      localStorage.setItem("token", token);
-
-      // Verify the token was actually persisted
-      const stored = localStorage.getItem("token");
-      console.log("STORED TOKEN:", stored ? stored.substring(0, 20) + "..." : null);
-
-      if (!stored) {
-        throw new Error("Failed to persist token in localStorage.");
-      }
-
+      await loginApi(data);
       window.location.href = "/dashboard";
     } catch (err: unknown) {
       const axiosErr = err as { response?: { data?: { message?: string } } };
@@ -77,17 +35,9 @@ export function useRegister() {
   const register = async (data: RegisterRequest) => {
     setLoading(true);
     setError(null);
-
     try {
-      const res = await registerApi(data);
-
-      const token = extractToken(res as Record<string, unknown>);
-
-      if (token) {
-        localStorage.setItem("token", token);
-      }
-
-      window.location.href = "/auth/login";
+      await registerApi(data);
+      window.location.href = "/dashboard";
     } catch (err: unknown) {
       const axiosErr = err as { response?: { data?: { message?: string } } };
       setError(
@@ -110,12 +60,10 @@ export function useLogout() {
     try {
       await logoutApi();
     } catch {
-      // Even if backend call fails, still clear local token
-      console.warn("Backend logout failed, clearing token locally.");
+      // ignore
     } finally {
-      localStorage.removeItem("token");
       setLoading(false);
-      window.location.href = "/auth/login";
+      window.location.href = "/login";
     }
   };
 
@@ -129,30 +77,8 @@ export function useGoogleLogin() {
   const googleLogin = async (idToken: string) => {
     setLoading(true);
     setError(null);
-
     try {
-      const res = await googleLoginApi(idToken);
-
-      console.log("GOOGLE LOGIN RESPONSE:", JSON.stringify(res));
-
-      const token = extractToken(res as Record<string, unknown>);
-
-      if (!token) {
-        throw new Error(
-          "No token found in server response. Check backend response format."
-        );
-      }
-
-      localStorage.setItem("token", token);
-
-      // Verify the token was actually persisted
-      const stored = localStorage.getItem("token");
-      console.log("STORED TOKEN:", stored ? stored.substring(0, 20) + "..." : null);
-
-      if (!stored) {
-        throw new Error("Failed to persist token in localStorage.");
-      }
-
+      await googleLoginApi(idToken);
       window.location.href = "/dashboard";
     } catch (err: unknown) {
       const axiosErr = err as { response?: { data?: { message?: string } } };

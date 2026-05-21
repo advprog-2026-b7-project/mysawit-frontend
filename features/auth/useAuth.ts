@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import axios from "axios";
+import authClient from "@/services/authClient";
 
 interface AuthUser {
   id: string;
@@ -15,31 +15,14 @@ interface AuthUser {
 export function useAuth() {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
-  const baseURL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
 
   const loadCurrentUser = async () => {
-    const token = localStorage.getItem("token");
-
-    if (!token) {
-      setLoading(false);
-      return;
-    }
-
-    const url = `${baseURL}/api/auth/me`;
-
     try {
-      const response = await axios.get<AuthUser>(url, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
+      const response = await authClient.get<AuthUser>("/api/auth/me");
       const payload = response.data as AuthUser | { data?: AuthUser };
       setUser("data" in payload && payload.data ? payload.data : (payload as AuthUser));
-    } catch (err: unknown) {
-      if (axios.isAxiosError(err) && err.response?.status === 401) {
-        localStorage.removeItem("token");
-      }
+    } catch {
+      setUser(null);
     } finally {
       setLoading(false);
     }
@@ -50,18 +33,12 @@ export function useAuth() {
   }, []);
 
   const logout = async () => {
-    const token = localStorage.getItem("token") ?? "";
     try {
-      await axios.post(
-        `${baseURL}/api/auth/logout`,
-        { token },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      await authClient.post("/api/auth/logout", {});
     } catch {
-      console.warn("Backend logout failed, clearing token locally.");
+      // ignore
     } finally {
-      localStorage.removeItem("token");
-      window.location.href = "/auth/login";
+      window.location.href = "/login";
     }
   };
 

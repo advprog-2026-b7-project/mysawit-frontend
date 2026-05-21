@@ -1,5 +1,5 @@
 import authClient from "@/services/authClient";
-import plantationServiceClient from "@/services/plantationClient";
+import plantationClient from "@/services/plantationClient";
 
 export type Role = "BURUH" | "MANDOR" | "ADMIN" | "SUPIR";
 
@@ -109,9 +109,7 @@ export async function getAssignmentCount(): Promise<number> {
 }
 
 export async function getPlantationCount(): Promise<number> {
-  const response = await plantationServiceClient.get("/api/v1/plantations", {
-    params: { page: 0, size: 1 },
-  });
-  const data = unwrap<PageResponse<unknown>>(response.data);
-  return data.totalElements ?? data.content?.length ?? 0;
+  const response = await plantationClient.get("/api/v1/plantations");
+  const data = unwrap<unknown>(response.data);
+  return Array.isArray(data) ? data.length : 0;
 }

@@ -11,12 +11,6 @@ export function useRoleDashboard(expectedRole: Role) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      router.push("/auth/login");
-      return;
-    }
-
     async function loadUser() {
       try {
         const me = await getMe();
@@ -26,9 +20,7 @@ export function useRoleDashboard(expectedRole: Role) {
         }
         setUser(me);
       } catch {
-        // Network error or expired token — redirect to login but don't wipe the token
-        // in case it's just a transient failure.
-        router.push("/auth/login");
+        router.push("/login");
       } finally {
         setLoading(false);
       }

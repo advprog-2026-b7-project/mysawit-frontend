@@ -363,7 +363,7 @@ export default function RegisterForm() {
           }}
         >
           Already have an account?{" "}
-          <Link href="/login" style={{ color: "#BB7354", textDecoration: "none", fontWeight: 700 }}>
+          <Link href="/auth/login" style={{ color: "#BB7354", textDecoration: "none", fontWeight: 700 }}>
             Login Now
           </Link>
         </p>

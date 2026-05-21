@@ -4,7 +4,6 @@ import { ReactNode, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import SideNavBar from "./SideNavBar";
 import { getMe, type MeResponse } from "@/features/admin/api";
-import { dashboardPathForRole } from "@/features/admin/routing";
 
 interface AdminLayoutProps {
   activePage: string;
@@ -26,9 +25,7 @@ export default function AdminLayout({ activePage, children, currentUser }: Admin
     }
 
     if (currentUser !== undefined) {
-      if (currentUser && currentUser.role !== "ADMIN") {
-        router.replace(dashboardPathForRole(currentUser.role));
-      }
+      setFetchedUser(currentUser);
       return;
     }
 
@@ -36,10 +33,6 @@ export default function AdminLayout({ activePage, children, currentUser }: Admin
     getMe()
       .then((me) => {
         if (!active) return;
-        if (me.role !== "ADMIN") {
-          router.replace(dashboardPathForRole(me.role));
-          return;
-        }
         setFetchedUser(me);
       })
       .catch(() => {

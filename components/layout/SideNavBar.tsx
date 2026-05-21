@@ -8,6 +8,7 @@ import { dashboardPathForRole } from "@/features/admin/routing";
 import {
   ChevronLeftIcon,
   ChevronRightIcon,
+  ClipboardListIcon,
   FileTextIcon,
   HistoryIcon,
   LayoutDashboardIcon,
@@ -36,6 +37,7 @@ const navByRole: Record<Role, NavItem[]> = {
     { label: "Dashboard", href: "/admin/dashboard", Icon: LayoutDashboardIcon },
     { label: "Users", href: "/admin/users", Icon: UsersIcon },
     { label: "Plantation", href: "/admin/plantations", Icon: LeafIcon },
+    { label: "Assignments", href: "/admin/assignments", Icon: ClipboardListIcon },
     { label: "Shipments", href: "/admin/shipments", Icon: TruckIcon },
     { label: "Payroll", href: "/admin/payroll", Icon: FileTextIcon },
     { label: "Wallet", href: "/admin/wallet", Icon: WalletIcon },
@@ -52,6 +54,7 @@ const navByRole: Record<Role, NavItem[]> = {
   BURUH: [
     { label: "Dashboard", href: "/buruh/dashboard", Icon: LayoutDashboardIcon },
     { label: "Submit Harvest", href: "/buruh/harvest", Icon: LeafIcon },
+    { label: "My Harvests", href: "/buruh/harvests", Icon: ClipboardListIcon },
     { label: "My Payment", href: "/buruh/payment", Icon: FileTextIcon },
     { label: "Wallet", href: "/buruh/wallet", Icon: WalletIcon },
     { label: "Profile", href: "/profile", Icon: UserIcon },
@@ -92,12 +95,12 @@ export default function SideNavBar({
       router.push(dashboardPathForRole(role));
       return;
     }
-    router.push(localStorage.getItem("token") ? "/dashboard" : "/login");
+    router.push(localStorage.getItem("token") ? "/dashboard" : "/auth/login");
   };
 
   const logout = () => {
     localStorage.removeItem("token");
-    router.push("/login");
+    router.push("/auth/login");
   };
 
   return (

@@ -70,12 +70,6 @@ export default function AdminUserDetailPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      router.push("/auth/login");
-      return;
-    }
-
     async function loadUser() {
       try {
         const me = await getMe();

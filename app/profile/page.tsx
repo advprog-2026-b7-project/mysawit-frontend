@@ -96,12 +96,6 @@ export default function ProfilePage() {
   const [viewingOther, setViewingOther] = useState(false);
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      router.push("/auth/login");
-      return;
-    }
-
     async function loadProfile() {
       try {
         if (userId) {
@@ -115,6 +109,8 @@ export default function ProfilePage() {
             setAssignment(await getBuruhAssignment(me.id));
           }
         }
+      } catch {
+        router.push("/login");
       } finally {
         setLoading(false);
       }

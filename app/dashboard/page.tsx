@@ -4,25 +4,17 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { getMe } from "@/features/admin/api";
 import { dashboardPathForRole } from "@/features/admin/routing";
-import { getTokenCookie, deleteTokenCookie } from "@/services/tokenCookie";
 
 export default function DashboardRedirectPage() {
   const router = useRouter();
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      router.replace("/auth/login");
-      return;
-    }
-
     async function redirectToRoleDashboard() {
       try {
         const me = await getMe();
         router.replace(dashboardPathForRole(me.role));
       } catch {
-        localStorage.removeItem("token");
-        router.replace("/auth/login");
+        router.replace("/login");
       }
     }
 

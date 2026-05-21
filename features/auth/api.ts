@@ -1,5 +1,4 @@
 import authClient from "@/services/authClient";
-import { getTokenCookie } from "@/services/tokenCookie";
 import type { LoginRequest, RegisterRequest } from "./types";
 
 export const loginApi = async (data: LoginRequest) => {
@@ -18,7 +17,6 @@ export const googleLoginApi = async (idToken: string) => {
 };
 
 export const logoutApi = async () => {
-  const token = typeof window !== "undefined" ? (getTokenCookie() ?? "") : "";
-  const res = await authClient.post("/api/auth/logout", { token });
+  const res = await authClient.post("/api/auth/logout", {});
   return res.data;
 };

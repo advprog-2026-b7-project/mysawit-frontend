@@ -6,11 +6,9 @@ import { useMemo, useState } from "react";
 import type { MeResponse, Role } from "@/features/admin/api";
 import { dashboardPathForRole } from "@/features/admin/routing";
 import { logoutApi } from "@/features/auth/api";
-import { getTokenCookie, deleteTokenCookie } from "@/services/tokenCookie";
 import {
   ChevronLeftIcon,
   ChevronRightIcon,
-  ClipboardListIcon,
   FileTextIcon,
   HistoryIcon,
   LayoutDashboardIcon,
@@ -39,7 +37,6 @@ const navByRole: Record<Role, NavItem[]> = {
     { label: "Dashboard", href: "/admin/dashboard", Icon: LayoutDashboardIcon },
     { label: "Users", href: "/admin/users", Icon: UsersIcon },
     { label: "Plantation", href: "/admin/plantations", Icon: LeafIcon },
-    { label: "Assignments", href: "/admin/assignments", Icon: ClipboardListIcon },
     { label: "Shipments", href: "/admin/shipments", Icon: TruckIcon },
     { label: "Payroll", href: "/admin/payroll", Icon: FileTextIcon },
     { label: "Wallet", href: "/admin/wallet", Icon: WalletIcon },
@@ -56,7 +53,6 @@ const navByRole: Record<Role, NavItem[]> = {
   BURUH: [
     { label: "Dashboard", href: "/buruh/dashboard", Icon: LayoutDashboardIcon },
     { label: "Submit Harvest", href: "/buruh/harvest", Icon: LeafIcon },
-    { label: "My Harvests", href: "/buruh/harvests", Icon: ClipboardListIcon },
     { label: "My Payment", href: "/buruh/payment", Icon: FileTextIcon },
     { label: "Wallet", href: "/buruh/wallet", Icon: WalletIcon },
     { label: "Profile", href: "/profile", Icon: UserIcon },
@@ -97,23 +93,15 @@ export default function SideNavBar({
       router.push(dashboardPathForRole(role));
       return;
     }
-<<<<<<< Updated upstream
-    router.push(localStorage.getItem("token") ? "/dashboard" : "/auth/login");
+    router.push("/dashboard");
   };
 
   const logout = () => {
-    localStorage.removeItem("token");
-    router.push("/auth/login");
-=======
-    router.push(getTokenCookie() ? "/dashboard" : "/login");
-  };
-
-  const logout = () => {
-    void logoutApi().catch(() => undefined).finally(() => {
-      deleteTokenCookie();
-      router.push("/login");
-    });
->>>>>>> Stashed changes
+    void logoutApi()
+      .catch(() => undefined)
+      .finally(() => {
+        router.push("/login");
+      });
   };
 
   return (
@@ -154,13 +142,18 @@ export default function SideNavBar({
           aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
           className="absolute -right-7 top-2 flex h-7 w-7 items-center justify-center rounded-full border border-[var(--color-border)] bg-white text-[var(--color-brand)] shadow-sm"
         >
-          {collapsed ? <ChevronRightIcon width={15} height={15} /> : <ChevronLeftIcon width={15} height={15} />}
+          {collapsed ? (
+            <ChevronRightIcon width={15} height={15} />
+          ) : (
+            <ChevronLeftIcon width={15} height={15} />
+          )}
         </button>
       </div>
 
       <nav className="flex flex-1 flex-col gap-2">
         {navItems.map(({ label, href, Icon }) => {
-          const active = pathname === href || pathname.startsWith(`${href}/`) || activePage === label;
+          const active =
+            pathname === href || pathname.startsWith(`${href}/`) || activePage === label;
           return (
             <button
               key={label}

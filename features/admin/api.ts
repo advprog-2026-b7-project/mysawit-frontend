@@ -1,9 +1,5 @@
 import authClient from "@/services/authClient";
-<<<<<<< Updated upstream
-import plantationServiceClient from "@/services/plantationClient";
-=======
-import { getTokenCookie } from "@/services/tokenCookie";
->>>>>>> Stashed changes
+import plantationClient from "@/services/plantationClient";
 
 export type Role = "BURUH" | "MANDOR" | "ADMIN" | "SUPIR";
 
@@ -113,22 +109,7 @@ export async function getAssignmentCount(): Promise<number> {
 }
 
 export async function getPlantationCount(): Promise<number> {
-<<<<<<< Updated upstream
-  const response = await plantationServiceClient.get("/api/v1/plantations", {
-    params: { page: 0, size: 1 },
-  });
-  const data = unwrap<PageResponse<unknown>>(response.data);
-  return data.totalElements ?? data.content?.length ?? 0;
-=======
-  // TODO: Replace with a count endpoint when Plantation exposes pagination metadata.
-  const token = typeof window !== "undefined" ? getTokenCookie() : null;
-  const response = await axios.get(
-    `${process.env.NEXT_PUBLIC_PLANTATION_API_URL || "http://localhost:8081"}/api/v1/plantations`,
-    {
-      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-    },
-  );
+  const response = await plantationClient.get("/api/v1/plantations");
   const data = unwrap<unknown>(response.data);
   return Array.isArray(data) ? data.length : 0;
->>>>>>> Stashed changes
 }

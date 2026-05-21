@@ -1,22 +1,8 @@
+"use client";
+
 import { useState } from "react";
 import { loginApi, registerApi, googleLoginApi, logoutApi } from "./api";
-import { setTokenCookie, deleteTokenCookie } from "@/services/tokenCookie";
 import type { LoginRequest, RegisterRequest } from "./types";
-
-function extractToken(res: Record<string, unknown>): string | null {
-  if (typeof res.token === "string" && res.token) return res.token;
-  if (typeof res.accessToken === "string" && res.accessToken) return res.accessToken;
-  if (typeof res.jwt === "string" && res.jwt) return res.jwt;
-  if (
-    res.data &&
-    typeof res.data === "object" &&
-    "token" in res.data &&
-    typeof (res.data as Record<string, unknown>).token === "string"
-  ) {
-    return (res.data as Record<string, unknown>).token as string;
-  }
-  return null;
-}
 
 export function useLogin() {
   const [loading, setLoading] = useState(false);
@@ -25,16 +11,8 @@ export function useLogin() {
   const login = async (data: LoginRequest) => {
     setLoading(true);
     setError(null);
-
     try {
-      const res = await loginApi(data);
-      const token = extractToken(res as Record<string, unknown>);
-
-      if (!token) {
-        throw new Error("No token found in server response.");
-      }
-
-      setTokenCookie(token);
+      await loginApi(data);
       window.location.href = "/dashboard";
     } catch (err: unknown) {
       const axiosErr = err as { response?: { data?: { message?: string } } };
@@ -57,14 +35,9 @@ export function useRegister() {
   const register = async (data: RegisterRequest) => {
     setLoading(true);
     setError(null);
-
     try {
-      const res = await registerApi(data);
-      const token = extractToken(res as Record<string, unknown>);
-      if (token) {
-        setTokenCookie(token);
-      }
-      window.location.href = "/auth/login";
+      await registerApi(data);
+      window.location.href = "/dashboard";
     } catch (err: unknown) {
       const axiosErr = err as { response?: { data?: { message?: string } } };
       setError(
@@ -89,9 +62,8 @@ export function useLogout() {
     } catch {
       // ignore
     } finally {
-      deleteTokenCookie();
       setLoading(false);
-      window.location.href = "/auth/login";
+      window.location.href = "/login";
     }
   };
 
@@ -105,16 +77,8 @@ export function useGoogleLogin() {
   const googleLogin = async (idToken: string) => {
     setLoading(true);
     setError(null);
-
     try {
-      const res = await googleLoginApi(idToken);
-      const token = extractToken(res as Record<string, unknown>);
-
-      if (!token) {
-        throw new Error("No token found in server response.");
-      }
-
-      setTokenCookie(token);
+      await googleLoginApi(idToken);
       window.location.href = "/dashboard";
     } catch (err: unknown) {
       const axiosErr = err as { response?: { data?: { message?: string } } };

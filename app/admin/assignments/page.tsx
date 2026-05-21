@@ -1,17 +1,16 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { useAuth } from "@/features/auth/useAuth";
+import React, { useEffect, useState } from "react";
+import AdminLayout from "@/components/layout/AdminLayout";
 import { AssignmentList } from "@/features/profile";
 import AssignmentModal from "@/features/profile/components/AssignmentModal";
 import { getUsersByRoleApi } from "@/features/profile/api";
 import Button from "@/components/ui/Button";
 import type { UserProfile } from "@/features/profile/types";
+import { useRoleDashboard } from "@/features/admin/useRoleDashboard";
 
 export default function AdminAssignmentsPage() {
-  const router = useRouter();
-  const { user: authUser, loading: authLoading } = useAuth();
+  const { user, loading: authLoading } = useRoleDashboard("ADMIN");
   const [buruhList, setBuruhList] = useState<UserProfile[]>([]);
   const [mandorList, setMandorList] = useState<UserProfile[]>([]);
   const [loading, setLoading] = useState(false);
@@ -20,18 +19,10 @@ export default function AdminAssignmentsPage() {
   const [selectedBuruh, setSelectedBuruh] = useState<UserProfile | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
 
-  // Check if user is authenticated and is ADMIN
   useEffect(() => {
-    if (!authLoading && (!authUser || authUser.role !== "ADMIN")) {
-      router.push("/dashboard");
-    }
-  }, [authUser, authLoading, router]);
+    if (authLoading || !user) return;
 
-  // Load Buruh and Mandor users (wait for auth to finish loading first)
-  useEffect(() => {
-    if (authLoading || !authUser) return;
-
-    const loadUsers = async () => {
+    async function loadUsers() {
       setLoading(true);
       setError(null);
       try {
@@ -42,20 +33,14 @@ export default function AdminAssignmentsPage() {
         setBuruhList(Array.isArray(buruh) ? buruh : []);
         setMandorList(Array.isArray(mandor) ? mandor : []);
       } catch (err) {
-        const message =
-          err instanceof Error ? err.message : "Gagal memuat data pengguna";
-        if (message.includes("401") || message.includes("Unauthorized")) {
-          router.push("/auth/login");
-          return;
-        }
-        setError(message);
+        setError(err instanceof Error ? err.message : "Gagal memuat data pengguna");
       } finally {
         setLoading(false);
       }
-    };
+    }
 
-    loadUsers();
-  }, [authLoading, authUser, router]);
+    void loadUsers();
+  }, [authLoading, user]);
 
   const handleOpenAssignmentModal = (buruh: UserProfile) => {
     setSelectedBuruh(buruh);
@@ -66,74 +51,144 @@ export default function AdminAssignmentsPage() {
     setRefreshKey((prev) => prev + 1);
   };
 
-  if (authLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen bg-gray-100 p-6">
-      <div className="max-w-7xl mx-auto space-y-6">
-        {/* Header */}
-        <div className="flex justify-between items-center">
-          <h1 className="text-3xl font-bold text-gray-900">Assignment Management</h1>
-          <Button variant="primary" onClick={() => router.back()}>
-            Kembali
-          </Button>
-        </div>
+    <AdminLayout activePage="Assignments" currentUser={user}>
+      <div className="mx-auto flex max-w-[1280px] flex-col gap-8">
+        <header>
+          <h1
+            style={{
+              fontFamily: "'Poppins', sans-serif",
+              fontWeight: 700,
+              fontSize: 50,
+              color: "#5B2012",
+              lineHeight: 1.05,
+            }}
+          >
+            Assignments
+          </h1>
+          <p
+            style={{
+              marginTop: 12,
+              fontFamily: "'Lato', sans-serif",
+              fontWeight: 400,
+              fontSize: 16,
+              color: "#52443D",
+            }}
+          >
+            Assign buruh to mandor and maintain active field supervision.
+          </p>
+        </header>
 
         {error && (
-          <div className="bg-red-50 border border-red-300 text-red-800 text-sm p-4 rounded-lg">
+          <div
+            style={{
+              background: "rgba(186,26,26,0.08)",
+              border: "1px solid rgba(186,26,26,0.2)",
+              borderRadius: 8,
+              padding: "12px 16px",
+              fontFamily: "'Lato', sans-serif",
+              fontSize: 14,
+              color: "#BA1A1A",
+            }}
+          >
             {error}
           </div>
         )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Buruh Selection Panel */}
-          <div className="bg-white rounded-lg shadow-lg p-6">
-            <h2 className="text-xl font-bold text-gray-800 mb-4">
-              Pilih Buruh untuk Assign
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[360px_1fr]">
+          <section
+            style={{
+              background: "#FFFFFF",
+              border: "1px solid #DBC1B9",
+              borderRadius: 12,
+              boxShadow: "0px 4px 20px rgba(91,32,18,0.06)",
+              padding: 28,
+            }}
+          >
+            <h2
+              style={{
+                fontFamily: "'Lato', sans-serif",
+                fontWeight: 700,
+                fontSize: 16,
+                color: "#5B2012",
+              }}
+            >
+              Pilih Buruh
             </h2>
+            <p
+              style={{
+                marginTop: 8,
+                fontFamily: "'Lato', sans-serif",
+                fontSize: 14,
+                color: "#52443D",
+              }}
+            >
+              Klik buruh untuk memilih mandor yang akan menjadi supervisornya.
+            </p>
 
-            {loading ? (
-              <div className="flex justify-center py-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
-              </div>
-            ) : buruhList.length === 0 ? (
-              <div className="text-center py-8 text-gray-500">
-                <p>Tidak ada Buruh ditemukan</p>
-              </div>
-            ) : (
-              <div className="space-y-2 max-h-96 overflow-y-auto">
-                {buruhList.map((buruh) => (
+            <div className="mt-6 max-h-[520px] space-y-3 overflow-y-auto pr-1">
+              {loading || authLoading ? (
+                <div className="py-8 text-center" style={{ color: "#53433D" }}>
+                  Memuat buruh...
+                </div>
+              ) : buruhList.length === 0 ? (
+                <div className="py-8 text-center" style={{ color: "#53433D" }}>
+                  Tidak ada Buruh ditemukan.
+                </div>
+              ) : (
+                buruhList.map((buruh) => (
                   <button
                     key={buruh.id}
+                    type="button"
                     onClick={() => handleOpenAssignmentModal(buruh)}
-                    className="w-full text-left px-4 py-3 bg-gray-50 hover:bg-green-50 border border-gray-200 hover:border-green-300 rounded-lg transition-colors"
+                    className="w-full text-left transition"
+                    style={{
+                      background: "#FFFFFF",
+                      border: "1px solid #DBC1B9",
+                      borderRadius: 12,
+                      padding: "14px 16px",
+                    }}
                   >
-                    <p className="font-semibold text-gray-800">{buruh.username}</p>
-                    <p className="text-sm text-gray-600">{buruh.email}</p>
+                    <p
+                      style={{
+                        fontFamily: "'Lato', sans-serif",
+                        fontWeight: 700,
+                        fontSize: 16,
+                        color: "#1B1C1B",
+                      }}
+                    >
+                      {buruh.nama || buruh.username}
+                    </p>
+                    <p
+                      style={{
+                        marginTop: 4,
+                        fontFamily: "'Lato', sans-serif",
+                        fontSize: 13,
+                        color: "#52443D",
+                      }}
+                    >
+                      {buruh.email}
+                    </p>
                   </button>
-                ))}
-              </div>
-            )}
-          </div>
+                ))
+              )}
+            </div>
 
-          {/* Assignment List */}
-          <div className="lg:col-span-2">
-            <AssignmentList
-              key={refreshKey}
-              onRefresh={handleAssignmentSuccess}
-              isLoading={loading}
-            />
-          </div>
+            <div className="mt-6">
+              <Button type="button" variant="secondary" onClick={() => setRefreshKey((prev) => prev + 1)}>
+                Refresh Assignments
+              </Button>
+            </div>
+          </section>
+
+          <AssignmentList
+            key={refreshKey}
+            onRefresh={handleAssignmentSuccess}
+            isLoading={loading}
+          />
         </div>
       </div>
 
-      {/* Assignment Modal */}
       <AssignmentModal
         isOpen={showAssignmentModal}
         onClose={() => {
@@ -145,6 +200,6 @@ export default function AdminAssignmentsPage() {
         isLoading={loading}
         onSuccess={handleAssignmentSuccess}
       />
-    </div>
+    </AdminLayout>
   );
 }

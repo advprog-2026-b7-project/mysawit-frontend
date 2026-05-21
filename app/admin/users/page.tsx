@@ -127,7 +127,7 @@ export default function AdminUsersPage() {
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) {
-      router.push("/login");
+      router.push("/auth/login");
       return;
     }
 
@@ -141,7 +141,7 @@ export default function AdminUsersPage() {
         setAuthorized(true);
       } catch {
         localStorage.removeItem("token");
-        router.push("/login");
+        router.push("/auth/login");
       }
     }
 

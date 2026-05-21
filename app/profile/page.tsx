@@ -2,11 +2,13 @@
 
 import { useEffect, useState } from "react";
 import type { ReactNode } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import AdminLayout from "@/components/layout/AdminLayout";
 import {
   getBuruhAssignment,
   getMe,
+  getUserById,
+  type AdminUser,
   type Assignment,
   type MeResponse,
   type Role,
@@ -86,24 +88,32 @@ function InfoField({
 
 export default function ProfilePage() {
   const router = useRouter();
-  const [profile, setProfile] = useState<MeResponse | null>(null);
+  const searchParams = useSearchParams();
+  const userId = searchParams.get("userId");
+  const [profile, setProfile] = useState<MeResponse | AdminUser | null>(null);
   const [assignment, setAssignment] = useState<Assignment | null>(null);
   const [loading, setLoading] = useState(true);
+  const [viewingOther, setViewingOther] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) {
-      router.push("/login");
+      router.push("/auth/login");
       return;
     }
 
     async function loadProfile() {
       try {
-        const me = await getMe();
-        setProfile(me);
-        // TODO: Filter sidebar nav items by role once role-specific navigation is finalized.
-        if (me.role === "BURUH") {
-          setAssignment(await getBuruhAssignment(me.id));
+        if (userId) {
+          const otherUser = await getUserById(userId);
+          setProfile(otherUser);
+          setViewingOther(true);
+        } else {
+          const me = await getMe();
+          setProfile(me);
+          if (me.role === "BURUH") {
+            setAssignment(await getBuruhAssignment(me.id));
+          }
         }
       } finally {
         setLoading(false);
@@ -111,7 +121,7 @@ export default function ProfilePage() {
     }
 
     void loadProfile();
-  }, [router]);
+  }, [router, userId]);
 
   if (loading) {
     return (
@@ -123,37 +133,52 @@ export default function ProfilePage() {
 
   if (!profile) return null;
 
-  const displayName = profile.nama || profile.username;
+  const displayName = "nama" in profile ? (profile.nama || profile.username) : profile.username;
+
+  function roleOf(p: MeResponse | AdminUser): Role {
+    return p.role;
+  }
+
+  function namaOf(p: MeResponse | AdminUser): string | undefined {
+    return "nama" in p ? p.nama : undefined;
+  }
+
+  const currentRole = roleOf(profile);
+  const currentNama = namaOf(profile);
 
   return (
     <AdminLayout activePage="Profile">
       <div className="flex max-w-[1040px] flex-col gap-8">
         <header>
+          {viewingOther && (
+            <button
+              type="button"
+              onClick={() => router.push("/profile")}
+              className="mb-4 text-[14px] font-bold text-[var(--color-icon-brown)]"
+            >
+              &larr; Back to my profile
+            </button>
+          )}
           <h1 className="admin-heading text-[48px] font-bold tracking-[-0.96px] text-[var(--color-text-heading)]">
-            My Profile
+            {viewingOther ? "User Profile" : "My Profile"}
           </h1>
           <p className="mt-2 text-[18px] font-normal text-[var(--color-text-body)]">
-            View your account details and role information
+            {viewingOther ? "View user account details and role information" : "View your account details and role information"}
           </p>
         </header>
 
         <section className="flex items-center gap-8 rounded-[12px] border border-[var(--color-border)] bg-white p-8 shadow-sm">
           <div className="admin-heading flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-[#924A39] text-[28px] font-bold text-white">
-            {initials(profile.nama, profile.username)}
+            {initials(currentNama, profile.username)}
           </div>
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-3">
               <h2 className="admin-heading text-[32px] font-semibold text-[var(--color-text-dark)]">
                 {displayName}
               </h2>
-              <RoleBadge role={profile.role} />
+              <RoleBadge role={currentRole} />
             </div>
             <p className="mt-1 text-[16px] text-[var(--color-text-body)]">@{profile.username}</p>
-            {profile.authProvider === "GOOGLE" && (
-              <div className="mt-3">
-                <GoogleBadge />
-              </div>
-            )}
           </div>
         </section>
 
@@ -162,29 +187,29 @@ export default function ProfilePage() {
             Information
           </h2>
           <div className="grid grid-cols-2 gap-6 rounded-[12px] border border-[var(--color-border)] bg-white p-6">
-            <InfoField label="FULL NAME">{profile.nama || "-"}</InfoField>
+            <InfoField label="FULL NAME">{currentNama || "-"}</InfoField>
             <InfoField label="USERNAME" mono>@{profile.username}</InfoField>
             <InfoField label="EMAIL">{profile.email}</InfoField>
             <InfoField label="USER ID" mono>{profile.id}</InfoField>
-            <InfoField label="ROLE"><RoleBadge role={profile.role} /></InfoField>
-            <InfoField label="MEMBER SINCE">{formatDate(profile.createdAt)}</InfoField>
+            <InfoField label="ROLE"><RoleBadge role={currentRole} /></InfoField>
+            <InfoField label="MEMBER SINCE">{formatDate("createdAt" in profile ? profile.createdAt : undefined)}</InfoField>
           </div>
         </section>
 
-        {profile.role === "MANDOR" && (
+        {currentRole === "MANDOR" && (
           <section>
             <h2 className="admin-heading mb-4 text-[24px] font-semibold text-[var(--color-text-heading)]">
               Mandor Information
             </h2>
             <div className="rounded-[12px] border border-[var(--color-border)] bg-[#CEB7B1] p-6">
               <InfoField label="CERTIFICATION NUMBER" mono>
-                {profile.mandorCertificationNumber || "-"}
+                {"mandorCertificationNumber" in profile ? (profile.mandorCertificationNumber || "-") : "-"}
               </InfoField>
             </div>
           </section>
         )}
 
-        {profile.role === "BURUH" && (
+        {currentRole === "BURUH" && !viewingOther && (
           <section>
             <h2 className="admin-heading mb-4 text-[24px] font-semibold text-[var(--color-text-heading)]">
               Assignment Information
@@ -207,7 +232,6 @@ export default function ProfilePage() {
             </div>
           </section>
         )}
-        {/* TODO: Show Supir kebun assignment information after Plantation exposes it. */}
       </div>
     </AdminLayout>
   );

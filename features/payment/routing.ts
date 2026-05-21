@@ -1,7 +1,6 @@
 // Payment Feature Routing Guide
 
 export const PAYMENT_ROUTES = {
-  // Admin Routes
   admin: {
     payment: '/admin/payment',
     paymentOverview: '/admin/payment?tab=overview',
@@ -10,37 +9,32 @@ export const PAYMENT_ROUTES = {
     wallet: '/admin/payment?tab=wallet',
   },
 
-  // Worker (Buruh) Routes
   buruh: {
     payroll: '/buruh/payroll',
     payrollStats: '/buruh/payroll?tab=stats',
     payrollList: '/buruh/payroll?tab=list',
   },
 
-  // Mandor Routes
   mandor: {
     payroll: '/mandor/payroll',
     payrollOverview: '/mandor/payroll?tab=overview',
     teamPayroll: '/mandor/payroll?tab=team',
   },
 
-  // Supir Routes
   supir: {
     payroll: '/supir/payroll',
     payrollStats: '/supir/payroll?tab=stats',
     payrollList: '/supir/payroll?tab=list',
   },
 
-  // Generic Worker Routes (legacy)
+
   worker: {
     payroll: '/payment/payroll',
     payrollStats: '/payment/payroll?tab=stats',
     payrollList: '/payment/payroll?tab=list',
   },
 
-  // API Routes
   api: {
-    // Payroll endpoints
     payroll: {
       list: '/api/payroll/list',
       byId: (id: string) => `/api/payroll/${id}`,
@@ -50,40 +44,32 @@ export const PAYMENT_ROUTES = {
       calculate: '/api/payroll/calculate',
     },
 
-    // Wage variables endpoints
     wageVariables: {
       get: '/api/wage-variables',
       update: '/api/wage-variables',
     },
 
-    // Wallet endpoints
     wallet: {
       get: '/api/wallet',
       byUserId: (userId: string) => `/api/wallet/user/${userId}`,
       balance: '/api/wallet/balance',
     },
 
-    // Payment gateway endpoints
     payment: {
       topUp: '/api/payment/top-up',
       verify: (transactionId: string) => `/api/payment/verify/${transactionId}`,
       payout: (payrollId: string) => `/api/payment/payout/${payrollId}`,
     },
 
-    // Test endpoints
-    test: {
-      triggerPayment: '/test/pay',
-    },
+
   },
 };
 
-// Helper function to build API URL
 export function buildApiUrl(endpoint: string, baseURL?: string): string {
-  const base = baseURL || process.env.NEXT_PUBLIC_PAYMENT_API_URL || 'http://localhost:8082/api';
+  const base = baseURL || process.env.NEXT_PUBLIC_PAYMENT_API_URL || 'http://localhost:808/api';
   return `${base}${endpoint}`;
 }
 
-// Helper function to build payroll filter params
 export interface PayrollFilterParams {
   status?: string;
   startDate?: string;

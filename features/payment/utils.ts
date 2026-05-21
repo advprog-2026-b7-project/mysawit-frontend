@@ -2,10 +2,7 @@
 
 import { WageVariables, PaymentCalculationResult } from './types';
 
-/**
- * Calculate Buruh (Laborer) payment
- * Formula: Upah Buruh = (Upah Buruh / Kg × Kilogram Sawit yang dipanen × 90%)
- */
+
 export function calculateBuruhPayment(
   wagePerKg: number,
   weightKg: number,
@@ -14,10 +11,7 @@ export function calculateBuruhPayment(
   return Math.floor((wagePerKg / 1000) * weightKg * percentage);
 }
 
-/**
- * Calculate Supir Truk (Truck Driver) payment
- * Formula: Upah Supir = (Upah Supir / Kg × Kilogram Sawit yang dikirim × 90%)
- */
+
 export function calculateSupirPayment(
   wagePerKg: number,
   weightKg: number,
@@ -26,10 +20,6 @@ export function calculateSupirPayment(
   return Math.floor((wagePerKg / 1000) * weightKg * percentage);
 }
 
-/**
- * Calculate Mandor (Supervisor) payment
- * Formula: Upah Mandor = (Upah Mandor / Kg × Kilogram Sawit yang diakui pabrik × 90%)
- */
 export function calculateMandorPayment(
   wagePerKg: number,
   weightKg: number,
@@ -38,9 +28,6 @@ export function calculateMandorPayment(
   return Math.floor((wagePerKg / 1000) * weightKg * percentage);
 }
 
-/**
- * Generate detailed payment calculation result
- */
 export function generatePaymentCalculation(
   workerId: string,
   workerType: 'BURUH' | 'SUPIR_TRUK' | 'MANDOR',
@@ -80,9 +67,6 @@ export function generatePaymentCalculation(
   };
 }
 
-/**
- * Format currency to Rupiah
- */
 export function formatRupiah(value: number): string {
   return new Intl.NumberFormat('id-ID', {
     style: 'currency',
@@ -91,34 +75,20 @@ export function formatRupiah(value: number): string {
   }).format(value);
 }
 
-/**
- * Format currency to SawitDollar
- */
 export function formatSawitDollar(value: number): string {
   return `${value} $`;
 }
 
-/**
- * Convert SawitDollar to Rupiah
- * 1 SawitDollar = Rp 10.000
- */
 export function sawaitDollarToRupiah(value: number): number {
   const conversionRate = parseInt(process.env.NEXT_PUBLIC_SAWIT_DOLLAR_TO_RUPIAH || '10000');
   return value * conversionRate;
 }
 
-/**
- * Convert Rupiah to SawitDollar
- * Rp 10.000 = 1 SawitDollar
- */
 export function rupiahToSawaitDollar(value: number): number {
   const conversionRate = parseInt(process.env.NEXT_PUBLIC_SAWIT_DOLLAR_TO_RUPIAH || '10000');
   return Math.floor(value / conversionRate);
 }
 
-/**
- * Get status badge color
- */
 export function getStatusColor(
   status: string
 ): {
@@ -159,9 +129,6 @@ export function getStatusColor(
   return statusColors[status] || { bg: 'bg-gray-50', text: 'text-gray-800', badge: 'bg-gray-100 text-gray-800' };
 }
 
-/**
- * Get status display label
- */
 export function getStatusLabel(status: string): string {
   const labels: Record<string, string> = {
     PENDING: 'Menunggu Persetujuan',
@@ -173,9 +140,6 @@ export function getStatusLabel(status: string): string {
   return labels[status] || status;
 }
 
-/**
- * Get worker type label
- */
 export function getWorkerTypeLabel(type: string): string {
   const labels: Record<string, string> = {
     BURUH: 'Buruh',
@@ -185,9 +149,6 @@ export function getWorkerTypeLabel(type: string): string {
   return labels[type] || type;
 }
 
-/**
- * Validate wage variables
- */
 export function validateWageVariables(variables: {
   upahBuruhPerKg: number;
   upahSupirPerKg: number;
@@ -211,9 +172,6 @@ export function validateWageVariables(variables: {
   };
 }
 
-/**
- * Validate payroll rejection reason
- */
 export function validateRejectionReason(reason: string): { valid: boolean; error?: string } {
   if (!reason || reason.trim().length === 0) {
     return { valid: false, error: 'Alasan penolakan tidak boleh kosong' };

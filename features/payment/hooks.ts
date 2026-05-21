@@ -11,18 +11,14 @@ import {
   PaymentGatewayResponse,
 } from './types';
 
-// Initialize payment client
-const paymentClient = new PaymentClient(process.env.NEXT_PUBLIC_PAYMENT_API_URL || 'http://localhost:8082/api');
+const paymentClient = new PaymentClient(process.env.NEXT_PUBLIC_PAYMENT_API_URL || 'http://localhost:8084/api');
 
-/**
- * Hook for managing payment/payroll operations
- */
+
 export function usePayment() {
   const [payrolls, setPayrolls] = useState<Payroll[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Fetch payrolls
   const fetchPayrolls = useCallback(async (filters?: PayrollFilters) => {
     setLoading(true);
     setError(null);
@@ -39,7 +35,6 @@ export function usePayment() {
     }
   }, []);
 
-  // Fetch single payroll
   const fetchPayrollById = useCallback(async (id: string) => {
     setLoading(true);
     setError(null);
@@ -55,7 +50,7 @@ export function usePayment() {
     }
   }, []);
 
-  // Approve payroll
+
   const approve = useCallback(async (payrollId: string) => {
     setLoading(true);
     setError(null);
@@ -72,7 +67,6 @@ export function usePayment() {
     }
   }, []);
 
-  // Reject payroll
   const reject = useCallback(async (payrollId: string, reason: string) => {
     setLoading(true);
     setError(null);
@@ -100,15 +94,11 @@ export function usePayment() {
   };
 }
 
-/**
- * Hook for managing wage variables
- */
 export function useWageVariables() {
   const [variables, setVariables] = useState<WageVariables | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Fetch wage variables
   const fetch = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -125,7 +115,6 @@ export function useWageVariables() {
     }
   }, []);
 
-  // Update wage variables
   const update = useCallback(async (newVariables: WageVariables) => {
     setLoading(true);
     setError(null);
@@ -151,15 +140,11 @@ export function useWageVariables() {
   };
 }
 
-/**
- * Hook for managing wallet
- */
 export function useWallet() {
   const [wallet, setWallet] = useState<Wallet | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Fetch wallet
   const fetch = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -176,7 +161,6 @@ export function useWallet() {
     }
   }, []);
 
-  // Get balance
   const getBalance = useCallback(async () => {
     try {
       return await paymentClient.getWalletBalance();
@@ -196,14 +180,10 @@ export function useWallet() {
   };
 }
 
-/**
- * Hook for payment gateway operations
- */
 export function usePaymentGateway() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Initiate top-up
   const initiateTopUp = useCallback(async (amount: number, paymentMethod: 'XENDIT' | 'MOCK' = 'MOCK') => {
     setLoading(true);
     setError(null);
@@ -219,7 +199,6 @@ export function usePaymentGateway() {
     }
   }, []);
 
-  // Verify payment
   const verifyPayment = useCallback(async (transactionId: string) => {
     setLoading(true);
     setError(null);
@@ -243,15 +222,11 @@ export function usePaymentGateway() {
   };
 }
 
-/**
- * Hook for worker payroll operations
- */
 export function useWorkerPayroll(workerId: string) {
   const [payrolls, setPayrolls] = useState<Payroll[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Fetch worker payrolls
   const fetch = useCallback(
     async (filters?: PayrollFilters) => {
       setLoading(true);
@@ -271,7 +246,6 @@ export function useWorkerPayroll(workerId: string) {
     [workerId]
   );
 
-  // Auto-fetch on mount and when workerId changes
   useEffect(() => {
     if (workerId) {
       fetch();

@@ -15,7 +15,7 @@ class PaymentClient {
   private client: AxiosInstance;
   private baseURL: string;
 
-  constructor(baseURL: string = 'http://localhost:8082/api') {
+  constructor(baseURL: string = 'http://localhost:8084/api') {
     this.baseURL = baseURL;
     this.client = axios.create({
       baseURL,
@@ -34,11 +34,6 @@ class PaymentClient {
     });
   }
 
-  // ========== PAYROLL ENDPOINTS ==========
-
-  /**
-   * Get all payrolls with optional filters
-   */
   async getPayrolls(filters?: PayrollFilters): Promise<PayrollListResponse> {
     try {
       const params = new URLSearchParams();
@@ -59,9 +54,6 @@ class PaymentClient {
     }
   }
 
-  /**
-   * Get payroll by ID
-   */
   async getPayrollById(id: string): Promise<Payroll> {
     try {
       const response = await this.client.get(`/payroll/${id}`);
@@ -72,9 +64,6 @@ class PaymentClient {
     }
   }
 
-  /**
-   * Get payrolls for a specific worker
-   */
   async getWorkerPayrolls(workerId: string, filters?: PayrollFilters): Promise<PayrollListResponse> {
     try {
       const params = new URLSearchParams({
@@ -94,9 +83,6 @@ class PaymentClient {
     }
   }
 
-  /**
-   * Approve payroll (Admin only)
-   */
   async approvePayroll(payrollId: string): Promise<Payroll> {
     try {
       const response = await this.client.post(`/payroll/${payrollId}/approve`);
@@ -107,9 +93,6 @@ class PaymentClient {
     }
   }
 
-  /**
-   * Reject payroll with reason (Admin only)
-   */
   async rejectPayroll(payrollId: string, reason: string): Promise<Payroll> {
     try {
       const response = await this.client.post(`/payroll/${payrollId}/reject`, { reason });
@@ -120,11 +103,7 @@ class PaymentClient {
     }
   }
 
-  // ========== WAGE VARIABLES ENDPOINTS ==========
 
-  /**
-   * Get current wage variables
-   */
   async getWageVariables(): Promise<WageVariables> {
     try {
       const response = await this.client.get('/wage-variables');
@@ -135,9 +114,6 @@ class PaymentClient {
     }
   }
 
-  /**
-   * Update wage variables (Admin only)
-   */
   async updateWageVariables(variables: WageVariables): Promise<WageVariables> {
     try {
       const response = await this.client.post('/wage-variables', variables);
@@ -148,11 +124,6 @@ class PaymentClient {
     }
   }
 
-  // ========== WALLET ENDPOINTS ==========
-
-  /**
-   * Get wallet info for current user
-   */
   async getWallet(): Promise<Wallet> {
     try {
       const response = await this.client.get('/wallet');
@@ -163,9 +134,7 @@ class PaymentClient {
     }
   }
 
-  /**
-   * Get wallet by user ID
-   */
+  
   async getWalletByUserId(userId: string): Promise<Wallet> {
     try {
       const response = await this.client.get(`/wallet/user/${userId}`);
@@ -176,9 +145,7 @@ class PaymentClient {
     }
   }
 
-  /**
-   * Get wallet balance
-   */
+  
   async getWalletBalance(): Promise<number> {
     try {
       const wallet = await this.getWallet();
@@ -189,11 +156,6 @@ class PaymentClient {
     }
   }
 
-  // ========== PAYMENT GATEWAY ENDPOINTS ==========
-
-  /**
-   * Initiate top-up using payment gateway
-   */
   async initiateTopUp(request: TopUpRequest): Promise<PaymentGatewayResponse> {
     try {
       const response = await this.client.post('/payment/top-up', request);
@@ -204,9 +166,7 @@ class PaymentClient {
     }
   }
 
-  /**
-   * Verify payment (callback from payment gateway)
-   */
+
   async verifyPayment(transactionId: string): Promise<PaymentGatewayResponse> {
     try {
       const response = await this.client.post(`/payment/verify/${transactionId}`);
@@ -217,9 +177,7 @@ class PaymentClient {
     }
   }
 
-  /**
-   * Process payout (transfer wallet balance to workers)
-   */
+
   async processPayout(payrollId: string): Promise<{ success: boolean; message: string }> {
     try {
       const response = await this.client.post(`/payment/payout/${payrollId}`);
@@ -230,11 +188,7 @@ class PaymentClient {
     }
   }
 
-  // ========== PAYMENT CALCULATION ENDPOINTS ==========
 
-  /**
-   * Calculate payroll for a worker based on harvest/delivery data
-   */
   async calculatePayroll(
     workerId: string,
     workerType: 'BURUH' | 'SUPIR_TRUK' | 'MANDOR',
@@ -254,5 +208,4 @@ class PaymentClient {
   }
 }
 
-// Export singleton instance
 export default PaymentClient;

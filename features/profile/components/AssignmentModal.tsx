@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import type { UserProfile } from "../types";
 import { createAssignmentApi } from "../api";
 import Button from "@/components/ui/Button";
@@ -20,11 +20,10 @@ export default function AssignmentModal({
   onClose,
   buruh,
   mandors,
-  isLoading = false,
   onSuccess,
   onError,
 }: AssignmentModalProps) {
-  const [selectedMandorId, setSelectedMandorId] = useState<string>("");
+  const [selectedMandorId, setSelectedMandorId] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -37,8 +36,8 @@ export default function AssignmentModal({
 
   if (!isOpen || !buruh) return null;
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
     setError(null);
 
     if (!selectedMandorId) {
@@ -57,8 +56,7 @@ export default function AssignmentModal({
       onSuccess?.();
       onClose();
     } catch (err) {
-      const message =
-        err instanceof Error ? err.message : "Gagal membuat assignment";
+      const message = err instanceof Error ? err.message : "Gagal membuat assignment";
       setError(message);
       onError?.(message);
     } finally {
@@ -66,70 +64,104 @@ export default function AssignmentModal({
     }
   };
 
+  const selectedMandor = mandors.find((mandor) => mandor.id === selectedMandorId);
+
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-lg max-w-md w-full mx-4 p-6">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-bold text-gray-800">Assign Mandor</h2>
-          <button
-            onClick={onClose}
-            className="text-gray-500 hover:text-gray-700 text-2xl leading-none"
-          >
-            ×
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center"
+      style={{ background: "rgba(27,28,27,0.35)" }}
+    >
+      <div
+        className="mx-4 w-full max-w-md p-6"
+        style={{
+          background: "#FFFFFF",
+          border: "1px solid #DBC1B9",
+          borderRadius: 12,
+          boxShadow: "0px 4px 20px rgba(91,32,18,0.06)",
+        }}
+      >
+        <div className="mb-4 flex items-center justify-between">
+          <h2 style={{ fontFamily: "'Lato', sans-serif", fontWeight: 700, fontSize: 16, color: "#5B2012" }}>
+            Assign Mandor
+          </h2>
+          <button type="button" onClick={onClose} className="text-2xl leading-none" style={{ color: "#854E31" }}>
+            x
           </button>
         </div>
 
         <div className="mb-4">
-          <p className="text-gray-600 text-sm mb-2">Buruh yang akan di-assign:</p>
-          <div className="bg-gray-100 p-3 rounded-lg">
-            <p className="font-semibold text-gray-800">{buruh.username}</p>
-            <p className="text-gray-600 text-sm">{buruh.email}</p>
+          <p className="mb-2 text-sm" style={{ color: "#52443D" }}>
+            Buruh yang akan di-assign:
+          </p>
+          <div className="rounded-lg p-3" style={{ background: "#EDE8E4" }}>
+            <p className="font-semibold" style={{ color: "#1B1C1B" }}>
+              {buruh.nama || buruh.username}
+            </p>
+            <p className="text-sm" style={{ color: "#52443D" }}>
+              {buruh.email}
+            </p>
           </div>
         </div>
 
         {error && (
-          <div className="bg-red-50 border border-red-300 text-red-800 text-sm p-3 rounded mb-4">
+          <div
+            className="mb-4 text-sm"
+            style={{
+              background: "rgba(186,26,26,0.08)",
+              border: "1px solid rgba(186,26,26,0.2)",
+              borderRadius: 8,
+              padding: "12px 16px",
+              color: "#BA1A1A",
+            }}
+          >
             {error}
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Pilih Mandor <span className="text-red-500">*</span>
+            <label className="mb-2 block text-sm font-semibold" style={{ color: "#52443D" }}>
+              Pilih Mandor <span style={{ color: "#BA1A1A" }}>*</span>
             </label>
             <select
               value={selectedMandorId}
-              onChange={(e) => setSelectedMandorId(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+              onChange={(event) => setSelectedMandorId(event.target.value)}
+              className="w-full focus:outline-none"
+              style={{
+                height: 50,
+                background: "#FFFFFF",
+                border: "1px solid #DBC1B9",
+                borderRadius: 12,
+                padding: "0 16px",
+                color: "#1B1C1B",
+              }}
               required
             >
               <option value="">-- Pilih Mandor --</option>
               {mandors.map((mandor) => (
                 <option key={mandor.id} value={mandor.id}>
-                  {mandor.username} ({mandor.email})
+                  {mandor.nama || mandor.username} ({mandor.email})
                 </option>
               ))}
             </select>
           </div>
 
-          {selectedMandorId && (
-            <div className="bg-green-50 border border-green-300 text-green-800 text-sm p-3 rounded">
+          {selectedMandor && (
+            <div
+              className="rounded p-3 text-sm"
+              style={{
+                background: "rgba(91,32,18,0.06)",
+                border: "1px solid rgba(91,32,18,0.15)",
+                color: "#5B2012",
+              }}
+            >
               <p className="font-semibold">Mandor yang dipilih:</p>
-              <p>
-                {mandors.find((m) => m.id === selectedMandorId)?.username}
-              </p>
+              <p>{selectedMandor.nama || selectedMandor.username}</p>
             </div>
           )}
 
           <div className="flex gap-2 pt-4">
-            <Button
-              type="button"
-              variant="secondary"
-              onClick={onClose}
-              disabled={loading}
-              className="flex-1"
-            >
+            <Button type="button" variant="secondary" onClick={onClose} disabled={loading} className="flex-1">
               Batal
             </Button>
             <Button

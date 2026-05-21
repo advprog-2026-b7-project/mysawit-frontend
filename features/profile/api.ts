@@ -10,6 +10,44 @@ import type {
   ReassignmentResponse
 } from "./types";
 
+interface ApiEnvelope<T> {
+  status?: string;
+  data?: T;
+}
+
+interface PageResponse<T> {
+  content: T[];
+  page: number;
+  size: number;
+  totalElements: number;
+  totalPages: number;
+}
+
+interface MandorAssignmentsResponse {
+  mandorId: string;
+  mandorNama?: string;
+  content: RawAssignmentResponse[];
+  page: number;
+  size: number;
+  totalElements: number;
+  totalPages: number;
+}
+
+interface RawAssignmentResponse {
+  id: string;
+  buruhId: string;
+  buruhNama?: string;
+  buruhName?: string;
+  mandorId: string;
+  mandorNama?: string;
+  mandorName?: string;
+  plantationId?: string | null;
+  assignedAt?: string;
+  createdAt?: string;
+  reassignedAt?: string | null;
+  updatedAt?: string;
+}
+
 function extractErrorMessage(err: unknown): string {
   if (axios.isAxiosError(err)) {
     const serverMsg =
@@ -22,11 +60,39 @@ function extractErrorMessage(err: unknown): string {
   return err instanceof Error ? err.message : "Unknown error";
 }
 
+function unwrap<T>(payload: unknown): T {
+  const envelope = payload as ApiEnvelope<T>;
+  return envelope && typeof envelope === "object" && "data" in envelope
+    ? (envelope.data as T)
+    : (payload as T);
+}
+
+function pageContent<T>(payload: unknown): T[] {
+  const unwrapped = unwrap<PageResponse<T> | T[]>(payload);
+  if (Array.isArray(unwrapped)) return unwrapped;
+  return unwrapped?.content ?? [];
+}
+
+function normalizeAssignment(raw: RawAssignmentResponse): AssignmentResponse {
+  return {
+    id: raw.id,
+    buruhId: raw.buruhId,
+    buruhName: raw.buruhName ?? raw.buruhNama ?? raw.buruhId,
+    mandorId: raw.mandorId,
+    mandorName: raw.mandorName ?? raw.mandorNama ?? raw.mandorId,
+    plantationId: raw.plantationId ?? null,
+    assignedAt: raw.assignedAt,
+    createdAt: raw.createdAt ?? raw.assignedAt ?? raw.reassignedAt ?? "",
+    updatedAt: raw.updatedAt,
+    reassignedAt: raw.reassignedAt ?? null,
+  };
+}
+
 // Get current user profile
 export const getCurrentUserProfileApi = async (): Promise<MeResponse> => {
   try {
     const res = await authClient.get("/api/auth/me");
-    return res.data;
+    return unwrap<MeResponse>(res.data);
   } catch (err) {
     throw new Error(extractErrorMessage(err));
   }
@@ -36,7 +102,7 @@ export const getCurrentUserProfileApi = async (): Promise<MeResponse> => {
 export const getUserProfileApi = async (userId: string): Promise<MeResponse> => {
   try {
     const res = await authClient.get(`/api/auth/profile/${userId}`);
-    return res.data;
+    return unwrap<MeResponse>(res.data);
   } catch (err) {
     throw new Error(extractErrorMessage(err));
   }
@@ -55,7 +121,7 @@ export const getAllUsersApi = async (filters?: GetUsersFiltersRequest): Promise<
 
   try {
     const res = await authClient.get(url);
-    return res.data;
+    return pageContent<UserProfile>(res.data);
   } catch (err) {
     throw new Error(extractErrorMessage(err));
   }
@@ -67,7 +133,7 @@ export const getUsersByRoleApi = async (role: "BURUH" | "MANDOR" | "ADMIN" | "SU
     const res = await authClient.get("/api/admin/users", {
       params: { role },
     });
-    return res.data;
+    return pageContent<UserProfile>(res.data);
   } catch (err) {
     throw new Error(extractErrorMessage(err));
   }
@@ -77,7 +143,7 @@ export const getUsersByRoleApi = async (role: "BURUH" | "MANDOR" | "ADMIN" | "SU
 export const createAssignmentApi = async (request: CreateAssignmentRequest): Promise<AssignmentResponse> => {
   try {
     const res = await authClient.post("/api/assignments", request);
-    return res.data;
+    return normalizeAssignment(unwrap<RawAssignmentResponse>(res.data));
   } catch (err) {
     throw new Error(extractErrorMessage(err));
   }
@@ -86,7 +152,7 @@ export const createAssignmentApi = async (request: CreateAssignmentRequest): Pro
 export const getAllAssignmentsApi = async (): Promise<AssignmentResponse[]> => {
   try {
     const res = await authClient.get("/api/assignments");
-    return res.data;
+    return pageContent<RawAssignmentResponse>(res.data).map(normalizeAssignment);
   } catch (err) {
     throw new Error(extractErrorMessage(err));
   }
@@ -95,7 +161,7 @@ export const getAllAssignmentsApi = async (): Promise<AssignmentResponse[]> => {
 export const getAssignmentByIdApi = async (id: string): Promise<AssignmentResponse> => {
   try {
     const res = await authClient.get(`/api/assignments/${id}`);
-    return res.data;
+    return normalizeAssignment(unwrap<RawAssignmentResponse>(res.data));
   } catch (err) {
     throw new Error(extractErrorMessage(err));
   }
@@ -104,7 +170,7 @@ export const getAssignmentByIdApi = async (id: string): Promise<AssignmentRespon
 export const getAssignmentsByBuruhApi = async (buruhId: string): Promise<AssignmentResponse[]> => {
   try {
     const res = await authClient.get(`/api/assignments/buruh/${buruhId}`);
-    return res.data;
+    return [normalizeAssignment(unwrap<RawAssignmentResponse>(res.data))];
   } catch (err) {
     throw new Error(extractErrorMessage(err));
   }
@@ -113,7 +179,9 @@ export const getAssignmentsByBuruhApi = async (buruhId: string): Promise<Assignm
 export const getAssignmentsByMandorApi = async (mandorId: string): Promise<AssignmentResponse[]> => {
   try {
     const res = await authClient.get(`/api/assignments/mandor/${mandorId}`);
-    return res.data;
+    const data = unwrap<MandorAssignmentsResponse | RawAssignmentResponse[]>(res.data);
+    const assignments = Array.isArray(data) ? data : data.content;
+    return (assignments ?? []).map(normalizeAssignment);
   } catch (err) {
     throw new Error(extractErrorMessage(err));
   }
@@ -130,7 +198,7 @@ export const deleteAssignmentApi = async (id: string): Promise<void> => {
 export const reassignmentApi = async (assignmentId: string, request: ReassignmentRequest): Promise<ReassignmentResponse> => {
   try {
     const res = await authClient.post(`/api/assignments/${assignmentId}/reassign`, request);
-    return res.data;
+    return unwrap<ReassignmentResponse>(res.data);
   } catch (err) {
     throw new Error(extractErrorMessage(err));
   }

@@ -1,4 +1,5 @@
 'use client';
+
 import React, { useState } from "react";
 import { approvePayroll, rejectPayroll } from "../api";
 import RejectModal from "./RejectModal";
@@ -15,7 +16,7 @@ export default function PayrollTable({ data, onRefresh }: { data?: Payroll[]; on
             await approvePayroll(id);
             handleRefresh();
         } catch (err) {
-            console.error("Error approving payroll:", err);
+            console.error(err);
             alert("Gagal melakukan approval");
         }
     };
@@ -28,61 +29,66 @@ export default function PayrollTable({ data, onRefresh }: { data?: Payroll[]; on
                 setSelectedId(null);
                 handleRefresh();
             } catch (err) {
-                console.error("Error rejecting payroll:", err);
+                console.error(err);
                 alert("Gagal melakukan penolakan");
             }
         }
     };
 
     return (
-        <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                <thead className="bg-gray-50 dark:bg-gray-700/50">
+        <div className="overflow-x-auto border border-[#DBC1B9] rounded-xl bg-white">
+            <table className="min-w-full divide-y divide-[#DBC1B9]/40 font-['Lato']">
+                {/* Header Sesuai Warna Khusus Figma */}
+                <thead className="bg-[#F1E3DD]/40">
                 <tr>
-                    <th className="px-8 py-4 text-left text-sm font-bold uppercase tracking-wider text-gray-600 dark:text-gray-300">Worker ID</th>
-                    <th className="px-8 py-4 text-left text-sm font-bold uppercase tracking-wider text-gray-600 dark:text-gray-300">Amount</th>
-                    <th className="px-8 py-4 text-left text-sm font-bold uppercase tracking-wider text-gray-600 dark:text-gray-300">Status</th>
-                    <th className="px-8 py-4 text-left text-sm font-bold uppercase tracking-wider text-gray-600 dark:text-gray-300">Reason</th>
-                    <th className="px-8 py-4 text-left text-sm font-bold uppercase tracking-wider text-gray-600 dark:text-gray-300">Action</th>
+                    <th className="px-8 py-4 text-left text-xs font-bold uppercase tracking-wider text-[#52443D]">Worker ID</th>
+                    <th className="px-8 py-4 text-left text-xs font-bold uppercase tracking-wider text-[#52443D]">Amount</th>
+                    <th className="px-8 py-4 text-left text-xs font-bold uppercase tracking-wider text-[#52443D]">Status</th>
+                    <th className="px-8 py-4 text-left text-xs font-bold uppercase tracking-wider text-[#52443D]">Reason</th>
+                    <th className="px-8 py-4 text-left text-xs font-bold uppercase tracking-wider text-[#52443D]">Action</th>
                 </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-100 dark:divide-gray-700 bg-white dark:bg-gray-800">
+                {/* Isi Body Terang & Serasi */}
+                <tbody className="divide-y divide-[#DBC1B9]/30 bg-white">
                 {payrolls.length > 0 ? (
                     payrolls.map((item: Payroll) => (
-                        <tr key={item.id} className="hover:bg-green-50/50 dark:hover:bg-gray-700/50 transition-all">
-                            <td className="px-8 py-5 whitespace-nowrap text-lg font-semibold text-gray-900 dark:text-gray-100">{item.workerId}</td>
-                            <td className="px-8 py-5 whitespace-nowrap text-lg text-gray-700 dark:text-gray-300 font-mono">
+                        <tr key={item.id} className="hover:bg-[#F1E3DD]/10 transition-all">
+                            <td className="px-8 py-5 whitespace-nowrap text-lg font-semibold text-[#5B2012]">{item.workerId}</td>
+                            <td className="px-8 py-5 whitespace-nowrap text-lg text-[#52443D] font-mono">
                                 Rp {item.amount.toLocaleString('id-ID')}
                             </td>
                             <td className="px-8 py-5 whitespace-nowrap">
-                                    <span className={`px-4 py-1.5 rounded-lg text-sm font-bold shadow-sm ${
-                                        item.status === 'SUCCESS'
-                                            ? 'bg-green-100 text-green-800 dark:bg-green-500/20 dark:text-green-400 border border-green-200 dark:border-green-500/30'
-                                            : item.status === 'PENDING'
-                                                ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-500/20 dark:text-yellow-400 border border-yellow-200 dark:border-yellow-500/30'
-                                                : 'bg-red-100 text-red-800 dark:bg-red-500/20 dark:text-red-400 border border-red-200 dark:border-red-500/30'
-                                    }`}>
+                                {/* Badge Status Earthy (Hijau Daun, Cokelat Judul, Merah Batang Sawit) */}
+                                <span className={`px-4 py-1.5 rounded-lg text-sm font-bold shadow-sm border ${
+                                    item.status === 'SUCCESS'
+                                        ? 'bg-green-50 text-green-700 border-green-200'
+                                        : item.status === 'PENDING'
+                                            ? 'bg-amber-50 text-[#8A4B2F] border-amber-200'
+                                            : 'bg-red-50 text-red-700 border-red-200'
+                                }`}>
                                         {item.status}
                                     </span>
                             </td>
-                            <td className="px-8 py-5 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                            <td className="px-8 py-5 whitespace-nowrap text-sm text-[#52443D]/80">
                                 {item.rejectionReason || "-"}
                             </td>
                             <td className="px-8 py-5 whitespace-nowrap">
                                 {item.status === 'PENDING' && (
                                     <div className="flex gap-3">
+                                        {/* Approve: Hijau Kebun */}
                                         <button
                                             onClick={() => handleApprove(item.id)}
-                                            className="px-3 py-1 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 transition-colors"
+                                            className="px-3 py-1 text-sm font-medium text-white bg-green-700 rounded-md hover:bg-green-800 focus:outline-none transition-colors shadow-sm"
                                         >
                                             Approve
                                         </button>
+                                        {/* Reject: Cokelat Kemerahan Logout Figma */}
                                         <button
                                             onClick={() => {
                                                 setSelectedId(item.id);
                                                 setIsModalOpen(true);
                                             }}
-                                            className="px-3 py-1 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors"
+                                            className="px-3 py-1 text-sm font-medium text-white bg-[#6D2615] rounded-md hover:bg-[#6D2615]/90 focus:outline-none transition-colors shadow-sm"
                                         >
                                             Reject
                                         </button>
@@ -93,7 +99,7 @@ export default function PayrollTable({ data, onRefresh }: { data?: Payroll[]; on
                     ))
                 ) : (
                     <tr>
-                        <td colSpan={5} className="px-8 py-20 text-center text-gray-400 dark:text-gray-500 text-lg italic">
+                        <td colSpan={5} className="px-8 py-20 text-center text-[#52443D]/50 text-lg italic">
                             No payroll data found.
                         </td>
                     </tr>

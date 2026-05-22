@@ -36,11 +36,14 @@ export const PAYMENT_ROUTES = {
   api: {
     payroll: {
       list: '/api/payroll/list',
+      byType: (payrollType: string) => `/api/payroll/by-type/${payrollType}`,
+      byWorker: (workerId: string) => `/api/payroll/worker?workerId=${encodeURIComponent(workerId)}`,
       byId: (id: string) => `/api/payroll/${id}`,
-      workerPayrolls: '/api/payroll/worker',
+      status: (id: string) => `/api/payroll/${id}/status`,
       approve: (id: string) => `/api/payroll/${id}/approve`,
       reject: (id: string) => `/api/payroll/${id}/reject`,
-      calculate: '/api/payroll/calculate',
+      createHarvest: '/api/payroll/harvest/create',
+      createDelivery: '/api/payroll/delivery/create',
     },
 
     wageVariables: {
@@ -52,7 +55,7 @@ export const PAYMENT_ROUTES = {
 };
 
 export function buildApiUrl(endpoint: string, baseURL?: string): string {
-  const base = baseURL || process.env.NEXT_PUBLIC_PAYMENT_API_URL || 'http://localhost:8084/api';
+  const base = baseURL || process.env.NEXT_PUBLIC_PAYMENT_API_URL || '/api';
   return `${base}${endpoint}`;
 }
 

@@ -1,184 +1,31 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { useWorkerPayroll } from '@/features/payment/hooks';
-import { PayrollStats, PayrollList } from '@/features/payment/components';
-import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+import SideNavBar from '@/components/layout/SideNavBar';
+import { useRoleDashboard } from '@/features/admin/useRoleDashboard';
+import WorkerPayrollSection from '@/features/payment/components/WorkerPayrollSection';
 
 export default function BuruhPayrollPage() {
-  const router = useRouter();
-  const [userId, setUserId] = useState<string>('');
-  const { payrolls, loading } = useWorkerPayroll(userId);
-  const [activeTab, setActiveTab] = useState<'stats' | 'list'>('stats');
+  const { user, loading } = useRoleDashboard('BURUH');
+  const [collapsed, setCollapsed] = useState(false);
 
-  // Get user ID from localStorage on mount
-  useEffect(() => {
-    const storedUserId = localStorage.getItem('user_id');
-    const userRole = localStorage.getItem('user_role');
-    
-    if (!storedUserId) {
-      router.push('/auth/login');
-    } else if (userRole !== 'BURUH') {
-      // Redirect jika bukan buruh
-      router.push('/dashboard');
-    } else {
-      setUserId(storedUserId);
-    }
-  }, [router]);
-
-  if (!userId) {
+  if (loading || !user) {
     return (
-      <div className="flex justify-center items-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
+      <div style={{ fontFamily: "'Lato', sans-serif", fontSize: 16, color: '#52443D' }}>
+        Loading payroll page...
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-green-700 to-green-600 text-white shadow-lg">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <h1 className="text-3xl font-bold">Penggajian Saya</h1>
-          <p className="text-green-100 mt-2">Lihat dan kelola penggajian Anda</p>
-        </div>
-      </div>
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Info Card */}
-        <div className="bg-green-50 border-l-4 border-green-500 rounded-lg p-4 mb-6">
-          <p className="text-sm text-green-800">
-            <strong>👤 ID Pekerja:</strong> {userId}
-          </p>
-          <p className="text-xs text-green-600 mt-1">
-            Berikut adalah daftar semua penggajian Anda. Anda dapat melihat detail dan status setiap penggajian.
-          </p>
-        </div>
-
-        {/* Tabs */}
-        <div className="flex gap-2 mb-6 border-b border-gray-300">
-          <button
-            onClick={() => setActiveTab('stats')}
-            className={`px-4 py-3 font-semibold border-b-2 transition ${
-              activeTab === 'stats'
-                ? 'border-green-600 text-green-600'
-                : 'border-transparent text-gray-600 hover:text-gray-800'
-            }`}
-          >
-            📊 Ringkasan
-          </button>
-          <button
-            onClick={() => setActiveTab('list')}
-            className={`px-4 py-3 font-semibold border-b-2 transition ${
-              activeTab === 'list'
-                ? 'border-green-600 text-green-600'
-                : 'border-transparent text-gray-600 hover:text-gray-800'
-            }`}
-          >
-            📋 Daftar Penggajian
-          </button>
-        </div>
-
-        {/* Tab Content */}
-        <div>
-          {activeTab === 'stats' && (
-            <div className="space-y-6">
-              {/* Quick Stats */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="bg-white rounded-lg shadow p-4 border-l-4 border-green-500">
-                  <p className="text-sm text-gray-600">Total Penggajian</p>
-                  <p className="text-2xl font-bold text-gray-800">{payrolls.length}</p>
-                </div>
-                <div className="bg-white rounded-lg shadow p-4 border-l-4 border-yellow-500">
-                  <p className="text-sm text-gray-600">Menunggu</p>
-                  <p className="text-2xl font-bold text-yellow-600">
-                    {payrolls.filter((p) => p.status === 'PENDING').length}
-                  </p>
-                </div>
-                <div className="bg-white rounded-lg shadow p-4 border-l-4 border-green-500">
-                  <p className="text-sm text-gray-600">Disetujui</p>
-                  <p className="text-2xl font-bold text-green-600">
-                    {payrolls.filter((p) => p.status === 'APPROVED').length}
-                  </p>
-                </div>
-                <div className="bg-white rounded-lg shadow p-4 border-l-4 border-red-500">
-                  <p className="text-sm text-gray-600">Ditolak</p>
-                  <p className="text-2xl font-bold text-red-600">
-                    {payrolls.filter((p) => p.status === 'REJECTED').length}
-                  </p>
-                </div>
-              </div>
-
-              {/* Total Amount */}
-              <div className="bg-white rounded-lg shadow p-6">
-                <h3 className="text-lg font-semibold text-gray-800 mb-4">Total Pendapatan</h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="bg-gradient-to-br from-green-400 to-green-600 rounded-lg p-4 text-white">
-                    <p className="text-sm opacity-90">Total Semua Penggajian</p>
-                    <p className="text-2xl font-bold">
-                      {new Intl.NumberFormat('id-ID', {
-                        style: 'currency',
-                        currency: 'IDR',
-                        minimumFractionDigits: 0,
-                      }).format(payrolls.reduce((sum, p) => sum + p.amount, 0))}
-                    </p>
-                  </div>
-                  <div className="bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-lg p-4 text-white">
-                    <p className="text-sm opacity-90">Menunggu Persetujuan</p>
-                    <p className="text-2xl font-bold">
-                      {new Intl.NumberFormat('id-ID', {
-                        style: 'currency',
-                        currency: 'IDR',
-                        minimumFractionDigits: 0,
-                      }).format(
-                        payrolls
-                          .filter((p) => p.status === 'PENDING')
-                          .reduce((sum, p) => sum + p.amount, 0)
-                      )}
-                    </p>
-                  </div>
-                  <div className="bg-gradient-to-br from-green-400 to-green-600 rounded-lg p-4 text-white">
-                    <p className="text-sm opacity-90">Sudah Disetujui</p>
-                    <p className="text-2xl font-bold">
-                      {new Intl.NumberFormat('id-ID', {
-                        style: 'currency',
-                        currency: 'IDR',
-                        minimumFractionDigits: 0,
-                      }).format(
-                        payrolls
-                          .filter((p) => p.status === 'APPROVED')
-                          .reduce((sum, p) => sum + p.amount, 0)
-                      )}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Detailed Stats */}
-              <div className="bg-white rounded-lg shadow p-6">
-                <h3 className="text-lg font-semibold text-gray-800 mb-4">Analisis Status</h3>
-                <PayrollStats payrolls={payrolls} isLoading={loading} />
-              </div>
-            </div>
-          )}
-
-          {activeTab === 'list' && (
-            <div>
-              {loading && (
-                <div className="flex justify-center py-12">
-                  <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-green-600"></div>
-                </div>
-              )}
-              {!loading && payrolls.length === 0 && (
-                <div className="bg-gray-100 rounded-lg p-12 text-center">
-                  <p className="text-gray-500 text-lg">Belum ada data penggajian</p>
-                </div>
-              )}
-              {!loading && payrolls.length > 0 && <PayrollList isAdmin={false} />}
-            </div>
-          )}
-        </div>
-      </div>
+    <div className="min-h-screen bg-white">
+      <SideNavBar activePage="My Payroll" currentUser={user} onCollapsedChange={setCollapsed} />
+      <main
+        style={{ marginLeft: collapsed ? 72 : 256 }}
+        className="min-h-screen p-12 transition-[margin-left] duration-200 ease-in-out"
+      >
+        <WorkerPayrollSection userId={user.id} workerType="BURUH" workerName={user.nama ?? user.username ?? user.email} />
+      </main>
     </div>
   );
 }

@@ -45,19 +45,7 @@ const WorkerPayrollSection: React.FC<WorkerPayrollSectionProps> = ({
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <h2 className="admin-heading text-[32px] font-bold text-[#6D2615]">Penggajian Saya</h2>
-        <a
-          href="/payment/payroll"
-          className="rounded-lg px-6 py-3 font-bold text-[#854E31] transition hover:bg-[#FBF4EA]"
-          style={{
-            background: "#FFFFFF",
-            border: "1px solid #DBC1B9",
-          }}
-        >
-          Lihat Semua
-        </a>
-      </div>
+      <h2 className="admin-heading text-[32px] font-bold text-[#6D2615]">Penggajian Saya</h2>
 
       {/* Stats Cards */}
       <section className="grid grid-cols-3 gap-8">

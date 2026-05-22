@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { SearchIcon } from '@/components/layout/AdminIcons';
 import { Payroll, PayrollStatus, PayrollFilters } from '../types';
 import { usePayment } from '../hooks';
 import PayrollCard from './PayrollCard';
@@ -60,63 +61,65 @@ const PayrollList: React.FC<PayrollListProps> = ({
   if (loading) {
     return (
       <div className="flex justify-center items-center py-12">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
+        <div className="h-12 w-12 animate-spin rounded-full border-b-2 border-[#5B2012]"></div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      {/* Filter Section */}
-      <div className="bg-white rounded-lg shadow-md p-6 space-y-5 border border-gray-100">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">
-            <span>🔍</span> Filter Daftar Gaji
+    <div className="space-y-6 text-[#211A18]">
+      <div className="rounded-3xl border border-[#DBC1B9] bg-white p-6 shadow-[0_12px_40px_rgba(91,32,18,0.06)] space-y-5">
+        <div className="flex items-center justify-between">
+          <h3 className="flex items-center gap-2 text-lg font-bold text-[#5B2012]">
+            <span className="inline-flex text-current">
+              <SearchIcon width={18} height={18} />
+            </span>
+            Filter Daftar Penggajian
           </h3>
         </div>
 
-        {/* Status Filter */}
         <div className="space-y-2">
-          <p className="text-sm font-semibold text-gray-700">Status Penggajian</p>
+          <p className="text-sm font-semibold text-[#52443D]">Status Penggajian</p>
           <div className="flex flex-wrap gap-2">
-          <button
-            onClick={() => handleStatusFilter('ALL')}
-            className={`px-4 py-2 rounded-lg text-sm font-semibold transition ${
-              !activeFilters.status ? 'bg-green-600 text-white shadow-md' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-            }`}
-          >
-            Semua
-          </button>
-          {['PENDING', 'APPROVED', 'REJECTED', 'SUCCESS', 'FAILED'].map((status) => (
             <button
-              key={status}
-              onClick={() => handleStatusFilter(status as PayrollStatus)}
-              className={`px-4 py-2 rounded-lg text-sm font-semibold transition ${
-                activeFilters.status === status ? `${getStatusColor(status as PayrollStatus)} shadow-md` : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              onClick={() => handleStatusFilter('ALL')}
+              className={`rounded-full px-4 py-2 text-sm font-semibold transition ${
+                !activeFilters.status ? 'bg-[#5B2012] text-white shadow-md' : 'bg-[#F6F1ED] text-[#52443D] hover:bg-[#EFE5DF]'
               }`}
             >
-              {status}
+              Semua
             </button>
-          ))}
+            {['PENDING', 'APPROVED', 'REJECTED'].map((status) => (
+              <button
+                key={status}
+                onClick={() => handleStatusFilter(status as PayrollStatus)}
+                className={`rounded-full px-4 py-2 text-sm font-semibold transition ${
+                  activeFilters.status === status
+                    ? `${getStatusColor(status as PayrollStatus)} shadow-md`
+                    : 'bg-[#F6F1ED] text-[#52443D] hover:bg-[#EFE5DF]'
+                }`}
+              >
+                {status}
+              </button>
+            ))}
           </div>
         </div>
 
-        {/* Date Filter */}
         <div className="space-y-2">
-          <p className="text-sm font-semibold text-gray-700">Rentang Tanggal</p>
+          <p className="text-sm font-semibold text-[#52443D]">Rentang Tanggal</p>
           <div className="flex gap-3 flex-wrap">
           <input
             type="date"
             value={activeFilters.startDate || ''}
             onChange={(e) => handleDateFilter(e.target.value, activeFilters.endDate || '')}
-            className="px-4 py-2 border-2 border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+            className="rounded-xl border border-[#DCCBC3] px-4 py-2 text-sm focus:border-[#A35A3A] focus:outline-none focus:ring-2 focus:ring-[#A35A3A]/20"
             placeholder="Tanggal Mulai"
           />
           <input
             type="date"
             value={activeFilters.endDate || ''}
             onChange={(e) => handleDateFilter(activeFilters.startDate || '', e.target.value)}
-            className="px-4 py-2 border-2 border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+            className="rounded-xl border border-[#DCCBC3] px-4 py-2 text-sm focus:border-[#A35A3A] focus:outline-none focus:ring-2 focus:ring-[#A35A3A]/20"
             placeholder="Tanggal Akhir"
           />
           <button
@@ -124,25 +127,23 @@ const PayrollList: React.FC<PayrollListProps> = ({
               setActiveFilters({});
               onFilterChange?.({});
             }}
-            className="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg text-sm font-semibold hover:bg-gray-400 transition"
+            className="rounded-xl bg-[#F3ECE8] px-4 py-2 text-sm font-semibold text-[#5B2012] transition hover:bg-[#E9DDD7]"
           >
-            🔄 Reset
+            Reset
           </button>
         </div>
         </div>
       </div>
 
-      {/* Error Message */}
       {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+        <div className="rounded-2xl border border-[#E4C9C1] bg-[#FFF4F0] px-4 py-3 text-[#BA1A1A]">
           {error}
         </div>
       )}
 
-      {/* Payroll Cards */}
       {payrolls.length === 0 ? (
-        <div className="text-center py-12 bg-white rounded-lg shadow">
-          <p className="text-gray-500 text-lg">Tidak ada data gaji ditemukan</p>
+        <div className="rounded-3xl border border-[#E3D4CD] bg-white px-6 py-12 text-center shadow-[0_12px_40px_rgba(91,32,18,0.06)]">
+          <p className="text-lg text-[#52443D]">Tidak ada data penggajian ditemukan</p>
         </div>
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-1">
@@ -158,10 +159,9 @@ const PayrollList: React.FC<PayrollListProps> = ({
         </div>
       )}
 
-      {/* Pagination info */}
       {payrolls.length > 0 && (
-        <div className="text-center text-gray-600 text-sm">
-          Total: {payrolls.length} data gaji
+        <div className="text-center text-sm text-[#52443D]">
+          Total: {payrolls.length} data penggajian
         </div>
       )}
     </div>

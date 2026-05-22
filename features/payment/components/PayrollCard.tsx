@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { CheckCircleIcon, FileTextIcon, HistoryIcon, UserIcon, WalletIcon, XCircleIcon } from '@/components/layout/AdminIcons';
 import { Payroll, PayrollStatus } from '../types';
 
 interface PayrollCardProps {
@@ -59,77 +60,103 @@ const PayrollCard: React.FC<PayrollCardProps> = ({ payroll, isAdmin = false, onA
 
   return (
     <>
-      <div className={`${colors.bg} border-l-4 rounded-lg p-5 hover:shadow-lg transition-all duration-200 bg-white border-b border-r border-gray-100`} style={{
+      <div className={`${colors.bg} rounded-3xl border border-[#E3D4CD] p-5 shadow-[0_10px_30px_rgba(91,32,18,0.06)] transition-all duration-200 hover:shadow-[0_14px_36px_rgba(91,32,18,0.1)]`} style={{
         borderLeftColor: payroll.status === 'PENDING' ? '#FBBF24' : payroll.status === 'APPROVED' ? '#10B981' : payroll.status === 'SUCCESS' ? '#10B981' : '#EF4444'
       }}>
-        {/* Header */}
-        <div className="flex justify-between items-start mb-4 pb-4 border-b border-gray-200">
+        <div className="mb-4 flex items-start justify-between border-b border-[#E7D7D0] pb-4">
           <div className="flex-1">
-            <h4 className="text-lg font-bold text-gray-900">{payroll.workerName || payroll.workerId}</h4>
-            <p className="text-sm text-gray-500 font-medium mt-1">🆔 {payroll.workerId}</p>
+            <h4 className="flex items-center gap-2 text-lg font-bold text-[#5B2012]">
+              <span className="inline-flex text-[#8A4B2F]">
+                <UserIcon width={18} height={18} />
+              </span>
+              {payroll.workerName || payroll.workerId}
+            </h4>
+            <p className="mt-1 text-sm font-medium text-[#8A4B2F]">ID {payroll.workerId}</p>
           </div>
           <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${colors.badge}`}>
             {payroll.status}
           </span>
         </div>
 
-        {/* Amount & Reference */}
-        <div className="grid grid-cols-2 gap-4 mb-4 pb-4 border-b border-gray-200">
-          <div className="bg-gray-50 rounded-lg p-3">
-            <p className="text-xs font-semibold text-gray-600 mb-1">💰 Jumlah Gaji</p>
-            <p className="text-2xl font-bold text-green-700">{amount}</p>
+        <div className="mb-4 grid grid-cols-2 gap-4 border-b border-[#E7D7D0] pb-4">
+          <div className="rounded-2xl border border-[#E8DDD7] bg-[#FFFDFC] p-3">
+            <p className="mb-1 flex items-center gap-2 text-xs font-semibold text-[#52443D]">
+              <WalletIcon width={14} height={14} />
+              Jumlah Gaji
+            </p>
+            <p className="text-2xl font-bold text-[#4C6430]">{amount}</p>
           </div>
-          <div className="bg-gray-50 rounded-lg p-3">
-            <p className="text-xs font-semibold text-gray-600 mb-1">📌 Referensi</p>
-            <p className="text-sm text-gray-800 font-mono break-all">{payroll.referenceId}</p>
+          <div className="rounded-2xl border border-[#E8DDD7] bg-[#FFFDFC] p-3">
+            <p className="mb-1 flex items-center gap-2 text-xs font-semibold text-[#52443D]">
+              <FileTextIcon width={14} height={14} />
+              Referensi
+            </p>
+            <p className="break-all font-mono text-sm text-[#5B2012]">{payroll.referenceId}</p>
           </div>
         </div>
 
-        {/* Description */}
         {payroll.description && (
-          <div className="mb-4 pb-4 border-b border-gray-200 bg-blue-50 rounded-lg p-3">
-            <p className="text-xs font-semibold text-gray-700 mb-2">📝 Keterangan Perhitungan</p>
-            <p className="text-sm text-gray-800 font-medium">{payroll.description}</p>
+          <div className="mb-4 rounded-2xl border border-[#DCCBC3] bg-[#F8F2EC] p-3">
+            <p className="mb-2 flex items-center gap-2 text-xs font-semibold text-[#5B2012]">
+              <FileTextIcon width={14} height={14} />
+              Keterangan Perhitungan
+            </p>
+            <p className="text-sm font-medium text-[#52443D]">{payroll.description}</p>
           </div>
         )}
 
-        {/* Rejection Reason */}
         {payroll.status === 'REJECTED' && payroll.rejectionReason && (
-          <div className="mb-4 pb-4 border-b border-red-300 bg-red-50 rounded-lg p-3">
-            <p className="text-xs font-semibold text-red-700 mb-2">❌ Alasan Penolakan</p>
-            <p className="text-sm text-red-800 font-medium">{payroll.rejectionReason}</p>
+          <div className="mb-4 rounded-2xl border border-[#E4C9C1] bg-[#FFF4F0] p-3">
+            <p className="mb-2 flex items-center gap-2 text-xs font-semibold text-[#BA1A1A]">
+              <XCircleIcon width={14} height={14} />
+              Alasan Penolakan
+            </p>
+            <p className="text-sm font-medium text-[#8F1D1D]">{payroll.rejectionReason}</p>
           </div>
         )}
 
-        {/* Timestamps */}
-        <div className="flex justify-between text-xs text-gray-500 mb-3">
-          {payroll.createdAt && <span>Dibuat: {new Date(payroll.createdAt).toLocaleDateString('id-ID')}</span>}
-          {payroll.updatedAt && <span>Diperbarui: {new Date(payroll.updatedAt).toLocaleDateString('id-ID')}</span>}
+        <div className="mb-3 flex justify-between text-xs text-[#8A4B2F]">
+          {payroll.createdAt && (
+            <span className="inline-flex items-center gap-1.5">
+              <HistoryIcon width={13} height={13} />
+              Dibuat: {new Date(payroll.createdAt).toLocaleDateString('id-ID')}
+            </span>
+          )}
+          {payroll.updatedAt && (
+            <span className="inline-flex items-center gap-1.5">
+              <HistoryIcon width={13} height={13} />
+              Diperbarui: {new Date(payroll.updatedAt).toLocaleDateString('id-ID')}
+            </span>
+          )}
         </div>
 
-        {/* Admin Actions */}
         {isAdmin && payroll.status === 'PENDING' && (
           <div className="flex gap-3 pt-4">
             <button
               onClick={handleApprove}
               disabled={isSubmitting}
-              className="flex-1 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white font-bold py-2 px-4 rounded-lg transition-colors shadow-md hover:shadow-lg"
+              className="flex-1 rounded-2xl bg-[#4C6430] px-4 py-2 font-bold text-white shadow-md transition-colors hover:bg-[#3F5328] hover:shadow-lg disabled:bg-gray-400"
             >
-              {isSubmitting ? '⏳ Memproses...' : '✅ Setujui'}
+              <span className="mr-2 inline-flex align-middle">
+                <CheckCircleIcon width={14} height={14} />
+              </span>
+              {isSubmitting ? 'Memproses...' : 'Setujui'}
             </button>
             <button
               onClick={() => setShowRejectModal(true)}
               disabled={isSubmitting}
-              className="flex-1 bg-red-600 hover:bg-red-700 disabled:bg-gray-400 text-white font-bold py-2 px-4 rounded-lg transition-colors shadow-md hover:shadow-lg"
+              className="flex-1 rounded-2xl bg-[#BA1A1A] px-4 py-2 font-bold text-white shadow-md transition-colors hover:bg-[#A11414] hover:shadow-lg disabled:bg-gray-400"
             >
-              ❌ Tolak
+              <span className="mr-2 inline-flex align-middle">
+                <XCircleIcon width={14} height={14} />
+              </span>
+              Tolak
             </button>
           </div>
         )}
 
-        {/* Non-pending status indicator */}
         {!isAdmin && payroll.status !== 'PENDING' && (
-          <div className="text-sm text-gray-600 pt-2 italic">
+          <div className="pt-2 text-sm italic text-[#52443D]">
             Status telah ditentukan oleh Admin
           </div>
         )}
@@ -137,15 +164,15 @@ const PayrollCard: React.FC<PayrollCardProps> = ({ payroll, isAdmin = false, onA
 
       {/* Reject Modal */}
       {showRejectModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-            <h3 className="text-lg font-bold text-gray-800 mb-4">Tolak Penggajian</h3>
-            <p className="text-sm text-gray-600 mb-4">Masukkan alasan penolakan:</p>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="mx-4 w-full max-w-md rounded-3xl border border-[#DBC1B9] bg-[#FFFDFC] p-6 shadow-[0_20px_60px_rgba(0,0,0,0.2)]">
+            <h3 className="mb-4 text-lg font-bold text-[#5B2012]">Tolak Penggajian</h3>
+            <p className="mb-4 text-sm text-[#52443D]">Masukkan alasan penolakan:</p>
             <textarea
               value={rejectReason}
               onChange={(e) => setRejectReason(e.target.value)}
               placeholder="Alasan penolakan..."
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-600 mb-4 text-sm"
+              className="mb-4 w-full rounded-2xl border border-[#DCCBC3] px-3 py-2 text-sm focus:border-[#BA1A1A] focus:outline-none focus:ring-2 focus:ring-[#BA1A1A]/20"
               rows={4}
             />
             <div className="flex gap-2">
@@ -155,15 +182,18 @@ const PayrollCard: React.FC<PayrollCardProps> = ({ payroll, isAdmin = false, onA
                   setRejectReason('');
                 }}
                 disabled={isSubmitting}
-                className="flex-1 px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 disabled:bg-gray-400 transition"
+                className="flex-1 rounded-2xl bg-[#F3ECE8] px-4 py-2 text-[#5B2012] transition hover:bg-[#E9DDD7] disabled:bg-gray-400"
               >
                 Batal
               </button>
               <button
                 onClick={handleReject}
                 disabled={!rejectReason.trim() || isSubmitting}
-                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:bg-gray-400 transition"
+                className="flex-1 rounded-2xl bg-[#BA1A1A] px-4 py-2 text-white transition hover:bg-[#A11414] disabled:bg-gray-400"
               >
+                <span className="mr-2 inline-flex align-middle">
+                  <XCircleIcon width={14} height={14} />
+                </span>
                 {isSubmitting ? 'Memproses...' : 'Tolak'}
               </button>
             </div>

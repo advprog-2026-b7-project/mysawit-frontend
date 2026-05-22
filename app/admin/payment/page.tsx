@@ -1,24 +1,33 @@
 'use client';
 
 import React, { useState } from 'react';
+import AdminLayout from '@/components/layout/AdminLayout';
+import { ClipboardListIcon, WalletIcon } from '@/components/layout/AdminIcons';
 import { usePayment } from '@/features/payment/hooks';
-import {
-  PayrollList,
-  PayrollStats,
-  WageVariablesForm,
-} from '@/features/payment/components';
+import { PayrollList, WageVariablesForm } from '@/features/payment/components';
+import { useRoleDashboard } from '@/features/admin/useRoleDashboard';
 
 export default function AdminPaymentPage() {
-  const { approve, reject } = usePayment();
-  const [activeTab, setActiveTab] = useState<'overview' | 'payroll' | 'settings' | 'wallet'>(
-    'overview'
-  );
+  const { user, loading: authLoading } = useRoleDashboard('ADMIN');
+  const { payrolls, loading, fetchPayrolls, approve, reject } = usePayment();
+  const [activeTab, setActiveTab] = useState<'payroll' | 'settings' | 'wallet'>('payroll');
   const [refreshKey, setRefreshKey] = useState(0);
+
+  React.useEffect(() => {
+    void fetchPayrolls();
+  }, [fetchPayrolls, refreshKey]);
+
+  if (authLoading || !user) {
+    return (
+      <div style={{ fontFamily: "'Lato', sans-serif", fontSize: 16, color: '#52443D' }}>
+        Loading payment page...
+      </div>
+    );
+  }
 
   const handleApprove = async (payrollId: string) => {
     try {
       await approve(payrollId);
-      alert('Penggajian berhasil disetujui');
       setRefreshKey((prev) => prev + 1);
     } catch (err) {
       alert('Gagal menyetujui penggajian: ' + (err instanceof Error ? err.message : 'Unknown error'));
@@ -28,7 +37,6 @@ export default function AdminPaymentPage() {
   const handleReject = async (payrollId: string, reason: string) => {
     try {
       await reject(payrollId, reason);
-      alert('Penggajian berhasil ditolak');
       setRefreshKey((prev) => prev + 1);
     } catch (err) {
       alert('Gagal menolak penggajian: ' + (err instanceof Error ? err.message : 'Unknown error'));
@@ -36,102 +44,67 @@ export default function AdminPaymentPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-green-700 to-green-600 text-white shadow-lg">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <h1 className="text-3xl font-bold">Dashboard Penggajian</h1>
-          <p className="text-green-100 mt-2">Kelola penggajian karyawan secara efisien</p>
-        </div>
-      </div>
+    <AdminLayout activePage="Payroll" currentUser={user}>
+      <div className="flex flex-col gap-8 text-[#211A18]">
+        <header className="space-y-3">
+          <p className="font-normal text-[18px] text-[#52443D]">
+            Welcome back, {user.nama || user.username || 'Admin'}
+          </p>
+          <h1 className="admin-heading text-[50px] font-bold tracking-[-1.25px] text-[#5B2012]">
+            Dashboard Penggajian
+          </h1>
+          <p className="max-w-3xl text-[16px] leading-7 text-[#52443D]">
+            Kelola persetujuan payroll, pengaturan variabel upah, dan riwayat pembayaran dari satu tempat yang lebih sederhana.
+          </p>
+        </header>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Tabs */}
-        <div className="flex gap-2 mb-6 border-b border-gray-300 overflow-x-auto">
-          <button
-            onClick={() => setActiveTab('overview')}
-            className={`px-4 py-3 font-semibold border-b-2 transition whitespace-nowrap ${
-              activeTab === 'overview'
-                ? 'border-green-600 text-green-600'
-                : 'border-transparent text-gray-600 hover:text-gray-800'
-            }`}
-          >
-            📊 Ringkasan
-          </button>
+        <section className="rounded-2xl border border-[#DBC1B9] bg-white px-4 pt-2 shadow-[0_4px_20px_rgba(91,32,18,0.04)]">
+          <div className="flex flex-wrap gap-2 border-b border-[#E7D7D0]">
           <button
             onClick={() => setActiveTab('payroll')}
-            className={`px-4 py-3 font-semibold border-b-2 transition whitespace-nowrap ${
+            className={`px-4 py-3 font-semibold border-b-2 transition ${
               activeTab === 'payroll'
-                ? 'border-green-600 text-green-600'
-                : 'border-transparent text-gray-600 hover:text-gray-800'
+                ? 'border-[#BB7354] text-[#BB7354]'
+                : 'border-transparent text-[#52443D] hover:text-[#5B2012]'
             }`}
           >
-            💰 Daftar Penggajian
+            <span className="mr-2 inline-flex align-middle text-current">
+              <ClipboardListIcon width={16} height={16} />
+            </span>
+            Daftar Penggajian
           </button>
           <button
             onClick={() => setActiveTab('settings')}
-            className={`px-4 py-3 font-semibold border-b-2 transition whitespace-nowrap ${
+            className={`px-4 py-3 font-semibold border-b-2 transition ${
               activeTab === 'settings'
-                ? 'border-green-600 text-green-600'
-                : 'border-transparent text-gray-600 hover:text-gray-800'
+                ? 'border-[#BB7354] text-[#BB7354]'
+                : 'border-transparent text-[#52443D] hover:text-[#5B2012]'
             }`}
           >
-            ⚙️ Pengaturan Upah
+            <span className="mr-2 inline-flex align-middle text-current">
+              <WalletIcon width={16} height={16} />
+            </span>
+            Pengaturan Upah
           </button>
           <button
             onClick={() => setActiveTab('wallet')}
-            className={`px-4 py-3 font-semibold border-b-2 transition whitespace-nowrap ${
+            className={`px-4 py-3 font-semibold border-b-2 transition ${
               activeTab === 'wallet'
-                ? 'border-green-600 text-green-600'
-                : 'border-transparent text-gray-600 hover:text-gray-800'
+                ? 'border-[#BB7354] text-[#BB7354]'
+                : 'border-transparent text-[#52443D] hover:text-[#5B2012]'
             }`}
           >
-            💳 Dompet
+            <span className="mr-2 inline-flex align-middle text-current">
+              <WalletIcon width={16} height={16} />
+            </span>
+            Dompet
           </button>
-        </div>
+          </div>
+        </section>
 
-        {/* Tab Content */}
-        <div className="space-y-6">
-          {/* Overview Tab */}
-          {activeTab === 'overview' && (
-            <div className="space-y-6">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Quick Stats */}
-                <div className="space-y-3">
-                  <h2 className="text-xl font-bold text-gray-800">Statistik Cepat</h2>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="bg-yellow-100 rounded-lg p-4 border-l-4 border-yellow-500">
-                      <p className="text-sm text-gray-700">Menunggu Persetujuan</p>
-                      <p className="text-2xl font-bold text-yellow-600">0</p>
-                    </div>
-                    <div className="bg-green-100 rounded-lg p-4 border-l-4 border-green-500">
-                      <p className="text-sm text-gray-700">Disetujui</p>
-                      <p className="text-2xl font-bold text-green-600">0</p>
-                    </div>
-                    <div className="bg-red-100 rounded-lg p-4 border-l-4 border-red-500">
-                      <p className="text-sm text-gray-700">Ditolak</p>
-                      <p className="text-2xl font-bold text-red-600">0</p>
-                    </div>
-                    <div className="bg-blue-100 rounded-lg p-4 border-l-4 border-blue-500">
-                      <p className="text-sm text-gray-700">Berhasil</p>
-                      <p className="text-2xl font-bold text-blue-600">0</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Full Stats */}
-              <div className="bg-white rounded-lg shadow p-6">
-                <h2 className="text-xl font-bold text-gray-800 mb-4">Detail Statistik</h2>
-                <PayrollStats key={`stats-${refreshKey}`} payrolls={[]} />
-              </div>
-            </div>
-          )}
-
-          {/* Payroll List Tab */}
+        <section className="rounded-3xl border border-[#DBC1B9] bg-[#FFFDFC] p-6 shadow-[0_12px_40px_rgba(91,32,18,0.06)]">
           {activeTab === 'payroll' && (
             <div>
-              <h2 className="text-xl font-bold text-gray-800 mb-4">Daftar Penggajian</h2>
               <PayrollList
                 key={`payroll-list-${refreshKey}`}
                 isAdmin={true}
@@ -141,15 +114,24 @@ export default function AdminPaymentPage() {
             </div>
           )}
 
-          {/* Settings Tab */}
           {activeTab === 'settings' && (
             <div>
               <WageVariablesForm onSave={() => setRefreshKey((prev) => prev + 1)} />
             </div>
           )}
 
-        </div>
+          {activeTab === 'wallet' && (
+            <div className="rounded-[12px] border border-dashed border-[var(--color-border)] bg-white p-8 text-center">
+              <p className="text-[18px] font-semibold text-[var(--color-text-heading)]">
+                Fitur dompet sedang disiapkan
+              </p>
+              <p className="mt-2 text-sm text-[var(--color-text-body)]">
+                Area ini bisa dipakai untuk histori transfer atau saldo payroll.
+              </p>
+            </div>
+          )}
+        </section>
       </div>
-    </div>
+    </AdminLayout>
   );
 }

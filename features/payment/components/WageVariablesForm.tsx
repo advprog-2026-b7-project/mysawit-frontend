@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { CheckCircleIcon, HardHatIcon, HistoryIcon, ShieldCheckIcon, TruckIcon, WalletIcon, XCircleIcon } from '@/components/layout/AdminIcons';
 import { WageVariables } from '../types';
 import { useWageVariables } from '../hooks';
 
@@ -83,145 +84,175 @@ const WageVariablesForm: React.FC<WageVariablesFormProps> = ({ onSave }) => {
   if (loading) {
     return (
       <div className="flex justify-center items-center py-12">
-        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-green-600"></div>
+        <div className="h-10 w-10 animate-spin rounded-full border-b-2 border-[#5B2012]"></div>
       </div>
     );
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6 space-y-6 border border-gray-100">
-      <div className="flex justify-between items-center">
-        <h2 className="text-3xl font-bold text-gray-800 flex items-center gap-2">
-          <span>⚙️</span> Pengaturan Variabel Upah
+    <div className="space-y-6 rounded-3xl border border-[#DBC1B9] bg-white p-6 shadow-[0_12px_40px_rgba(91,32,18,0.06)] text-[#211A18]">
+      <div className="flex items-center justify-between gap-4">
+        <h2 className="flex items-center gap-2 text-3xl font-bold text-[#5B2012]">
+          <span className="inline-flex text-current">
+            <ShieldCheckIcon width={24} height={24} />
+          </span>
+          Pengaturan Variabel Upah
         </h2>
         {!isEditing && (
           <button
             onClick={() => setIsEditing(true)}
-            className="px-4 py-2 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition shadow-md"
+            className="rounded-2xl bg-[#5B2012] px-4 py-2 font-bold text-white shadow-md transition hover:bg-[#472011]"
           >
-            ✏️ Edit
+            Edit
           </button>
         )}
       </div>
 
       {error && (
-        <div className="bg-red-100 border-l-4 border-red-500 text-red-700 px-4 py-3 rounded-lg font-semibold">
-          ❌ {error}
+        <div className="rounded-2xl border border-[#E4C9C1] bg-[#FFF4F0] px-4 py-3 font-semibold text-[#BA1A1A]">
+          {error}
         </div>
       )}
 
       {successMessage && (
-        <div className="bg-green-100 border-l-4 border-green-500 text-green-700 px-4 py-3 rounded-lg font-semibold">
-          ✅ {successMessage}
+        <div className="rounded-2xl border border-[#CFE0C2] bg-[#F0F7EA] px-4 py-3 font-semibold text-[#4C6430]">
+          {successMessage}
         </div>
       )}
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Upah Buruh per KG */}
-        <div className="bg-blue-50 border-l-4 border-blue-500 rounded-lg p-5 hover:shadow-md transition">
-          <label className="block text-sm font-bold text-gray-800 mb-2">
-            👷 Upah Buruh per Kg
+        <div className="rounded-3xl border border-[#DCCBC3] bg-[#FFFDFC] p-5 shadow-[0_8px_24px_rgba(91,32,18,0.04)] transition hover:shadow-[0_12px_32px_rgba(91,32,18,0.08)]">
+          <label className="mb-2 block text-sm font-bold text-[#5B2012]">
+            <span className="mr-2 inline-flex align-middle text-[#4C6430]">
+              <HardHatIcon width={16} height={16} />
+            </span>
+            Upah Buruh per Kg
           </label>
-          <p className="text-xs text-gray-700 mb-4 bg-white p-3 rounded border border-blue-200 font-mono">
+          <p className="mb-4 rounded-2xl border border-[#E7D7D0] bg-[#F8F2EC] p-3 font-mono text-xs text-[#52443D]">
             Rumus: Upah Buruh = Upah/Kg × Kilogram Panen × 90%
           </p>
           {!isEditing ? (
-            <div className="text-3xl font-bold text-blue-700">{formatRupiah(formData.upahBuruhPerKg)}</div>
+            <div className="text-3xl font-bold text-[#4C6430]">{formatRupiah(formData.upahBuruhPerKg)}</div>
           ) : (
             <input
               type="number"
               value={formData.upahBuruhPerKg}
               onChange={(e) => handleChange('upahBuruhPerKg', parseFloat(e.target.value))}
-              className="w-full px-4 py-2 border-2 border-blue-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent font-semibold text-lg"
+              className="w-full rounded-2xl border border-[#DCCBC3] px-4 py-2 text-lg font-semibold focus:border-[#4C6430] focus:outline-none focus:ring-2 focus:ring-[#4C6430]/20"
               min="0"
               step="1000"
             />
           )}
         </div>
 
-        {/* Upah Supir Truk per KG */}
-        <div className="bg-purple-50 border-l-4 border-purple-500 rounded-lg p-5 hover:shadow-md transition">
-          <label className="block text-sm font-bold text-gray-800 mb-2">
-            🚚 Upah Supir Truk per Kg
+        <div className="rounded-3xl border border-[#DCCBC3] bg-[#FFFDFC] p-5 shadow-[0_8px_24px_rgba(91,32,18,0.04)] transition hover:shadow-[0_12px_32px_rgba(91,32,18,0.08)]">
+          <label className="mb-2 block text-sm font-bold text-[#5B2012]">
+            <span className="mr-2 inline-flex align-middle text-[#2F5F8A]">
+              <TruckIcon width={16} height={16} />
+            </span>
+            Upah Supir Truk per Kg
           </label>
-          <p className="text-xs text-gray-700 mb-4 bg-white p-3 rounded border border-purple-200 font-mono">
+          <p className="mb-4 rounded-2xl border border-[#E7D7D0] bg-[#F8F2EC] p-3 font-mono text-xs text-[#52443D]">
             Rumus: Upah Supir = Upah/Kg × Kilogram Kirim × 90%
           </p>
           {!isEditing ? (
-            <div className="text-3xl font-bold text-purple-700">{formatRupiah(formData.upahSupirPerKg)}</div>
+            <div className="text-3xl font-bold text-[#2F5F8A]">{formatRupiah(formData.upahSupirPerKg)}</div>
           ) : (
             <input
               type="number"
               value={formData.upahSupirPerKg}
               onChange={(e) => handleChange('upahSupirPerKg', parseFloat(e.target.value))}
-              className="w-full px-4 py-2 border-2 border-purple-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent font-semibold text-lg"
+              className="w-full rounded-2xl border border-[#DCCBC3] px-4 py-2 text-lg font-semibold focus:border-[#2F5F8A] focus:outline-none focus:ring-2 focus:ring-[#2F5F8A]/20"
               min="0"
               step="1000"
             />
           )}
         </div>
 
-        {/* Upah Mandor per KG */}
-        <div className="bg-orange-50 border-l-4 border-orange-500 rounded-lg p-5 hover:shadow-md transition">
-          <label className="block text-sm font-bold text-gray-800 mb-2">
-            👔 Upah Mandor per Kg
+        <div className="rounded-3xl border border-[#DCCBC3] bg-[#FFFDFC] p-5 shadow-[0_8px_24px_rgba(91,32,18,0.04)] transition hover:shadow-[0_12px_32px_rgba(91,32,18,0.08)]">
+          <label className="mb-2 block text-sm font-bold text-[#5B2012]">
+            <span className="mr-2 inline-flex align-middle text-[#A35A3A]">
+              <WalletIcon width={16} height={16} />
+            </span>
+            Upah Mandor per Kg
           </label>
-          <p className="text-xs text-gray-700 mb-4 bg-white p-3 rounded border border-orange-200 font-mono">
+          <p className="mb-4 rounded-2xl border border-[#E7D7D0] bg-[#F8F2EC] p-3 font-mono text-xs text-[#52443D]">
             Rumus: Upah Mandor = Upah/Kg × Kilogram Akui Pabrik × 90%
           </p>
           {!isEditing ? (
-            <div className="text-3xl font-bold text-orange-700">{formatRupiah(formData.upahMandorPerKg)}</div>
+            <div className="text-3xl font-bold text-[#A35A3A]">{formatRupiah(formData.upahMandorPerKg)}</div>
           ) : (
             <input
               type="number"
               value={formData.upahMandorPerKg}
               onChange={(e) => handleChange('upahMandorPerKg', parseFloat(e.target.value))}
-              className="w-full px-4 py-2 border-2 border-orange-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent font-semibold text-lg"
+              className="w-full rounded-2xl border border-[#DCCBC3] px-4 py-2 text-lg font-semibold focus:border-[#A35A3A] focus:outline-none focus:ring-2 focus:ring-[#A35A3A]/20"
               min="0"
               step="1000"
             />
           )}
         </div>
 
-        {/* Info Box */}
-        <div className="bg-yellow-50 border-l-4 border-yellow-500 rounded-lg p-5">
-          <h4 className="font-bold text-yellow-900 mb-3 flex items-center gap-2">
-            <span>ℹ️</span> Informasi Penting
+        <div className="rounded-3xl border border-[#E3D4CD] bg-[#FBF4EA] p-5">
+          <h4 className="mb-3 flex items-center gap-2 font-bold text-[#5B2012]">
+            <span className="inline-flex text-[#8A4B2F]">
+              <ShieldCheckIcon width={16} height={16} />
+            </span>
+            Informasi Penting
           </h4>
-          <ul className="text-sm text-yellow-800 space-y-2 font-semibold">
-            <li>✓ Ketiga variabel digunakan untuk menghitung gaji otomatis</li>
-            <li>✓ Setiap gaji dikurangi 10% (maksimum pembayaran 90%)</li>
-            <li>✓ Perubahan berlaku untuk penggajian baru saja</li>
-            <li>✓ Verifikasi nilai sebelum menyimpan</li>
+          <ul className="space-y-2 text-sm font-semibold text-[#8A4B2F]">
+            <li className="flex items-start gap-2">
+              <CheckCircleIcon width={16} height={16} />
+              <span>Ketiga variabel digunakan untuk menghitung gaji otomatis</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <CheckCircleIcon width={16} height={16} />
+              <span>Setiap gaji dikurangi 10% (maksimum pembayaran 90%)</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <CheckCircleIcon width={16} height={16} />
+              <span>Perubahan berlaku untuk penggajian baru saja</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <CheckCircleIcon width={16} height={16} />
+              <span>Verifikasi nilai sebelum menyimpan</span>
+            </li>
           </ul>
         </div>
 
-        {/* Buttons */}
         {isEditing && (
-          <div className="flex gap-3 pt-6 border-t border-gray-200">
+          <div className="flex gap-3 border-t border-[#E7D7D0] pt-6">
             <button
               type="button"
               onClick={handleCancel}
-              className="flex-1 px-4 py-3 bg-gray-500 text-white font-bold rounded-lg hover:bg-gray-600 transition shadow-md disabled:bg-gray-300"
+              className="flex-1 rounded-2xl bg-[#F3ECE8] px-4 py-3 font-bold text-[#5B2012] transition hover:bg-[#E9DDD7] disabled:bg-gray-300"
               disabled={isSaving}
             >
-              ❌ Batal
+              <span className="mr-2 inline-flex align-middle">
+                <XCircleIcon width={14} height={14} />
+              </span>
+              Batal
             </button>
             <button
               type="submit"
-              className="flex-1 px-4 py-3 bg-green-600 text-white font-bold rounded-lg hover:bg-green-700 transition shadow-md disabled:bg-gray-400"
+              className="flex-1 rounded-2xl bg-[#5B2012] px-4 py-3 font-bold text-white shadow-md transition hover:bg-[#472011] disabled:bg-gray-400"
               disabled={isSaving}
             >
-              {isSaving ? '⏳ Menyimpan...' : '✅ Simpan'}
+              <span className="mr-2 inline-flex align-middle">
+                <CheckCircleIcon width={14} height={14} />
+              </span>
+              {isSaving ? 'Menyimpan...' : 'Simpan'}
             </button>
           </div>
         )}
       </form>
 
-      {/* Last Updated */}
       {variables?.updatedAt && (
-        <div className="text-xs text-gray-500 text-center pt-4 border-t border-gray-200 font-semibold">
-          📅 Terakhir diperbarui: {new Date(variables.updatedAt).toLocaleString('id-ID')}
+        <div className="border-t border-[#E7D7D0] pt-4 text-center text-xs font-semibold text-[#8A4B2F]">
+          <span className="mr-2 inline-flex align-middle text-[#8A4B2F]">
+            <HistoryIcon width={12} height={12} />
+          </span>
+          Terakhir diperbarui: {new Date(variables.updatedAt).toLocaleString('id-ID')}
         </div>
       )}
     </div>

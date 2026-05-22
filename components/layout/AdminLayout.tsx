@@ -32,7 +32,7 @@ export default function AdminLayout({ activePage, children, currentUser }: Admin
   }, [currentUser]);
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-[#FBF8F6]">
       <SideNavBar
         activePage={activePage}
         currentUser={resolvedUser}

@@ -9,7 +9,7 @@ RUN corepack enable && corepack prepare pnpm@10.30.1 --activate
 
 FROM base AS build
 
-ENV NODE_ENV=development
+ENV NODE_ENV=production
 ENV PNPM_CONFIG_DANGEROUSLY_ALLOW_ALL_BUILDS=true
 
 RUN apt-get update -qq && \
@@ -17,7 +17,7 @@ RUN apt-get update -qq && \
     rm -rf /var/lib/apt/lists/*
 
 COPY package.json pnpm-lock.yaml ./
-RUN pnpm install --frozen-lockfile
+RUN pnpm install --frozen-lockfile --prod=false
 
 COPY . .
 RUN pnpm run build

@@ -6,9 +6,7 @@ import {
   Payroll,
   PayrollListResponse,
   WageVariables,
-  Wallet,
   PayrollFilters,
-  PaymentGatewayResponse,
 } from './types';
 
 const paymentClient = new PaymentClient(process.env.NEXT_PUBLIC_PAYMENT_API_URL || 'http://localhost:8084/api');
@@ -137,88 +135,6 @@ export function useWageVariables() {
     error,
     fetch,
     update,
-  };
-}
-
-export function useWallet() {
-  const [wallet, setWallet] = useState<Wallet | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const fetch = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const data = await paymentClient.getWallet();
-      setWallet(data);
-      return data;
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to fetch wallet';
-      setError(message);
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  const getBalance = useCallback(async () => {
-    try {
-      return await paymentClient.getWalletBalance();
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to get balance';
-      setError(message);
-      throw err;
-    }
-  }, []);
-
-  return {
-    wallet,
-    loading,
-    error,
-    fetch,
-    getBalance,
-  };
-}
-
-export function usePaymentGateway() {
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const initiateTopUp = useCallback(async (amount: number, paymentMethod: 'XENDIT' | 'MOCK' = 'MOCK') => {
-    setLoading(true);
-    setError(null);
-    try {
-      const response = await paymentClient.initiateTopUp({ amount, paymentMethod });
-      return response;
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to initiate top-up';
-      setError(message);
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  const verifyPayment = useCallback(async (transactionId: string) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const response = await paymentClient.verifyPayment(transactionId);
-      return response;
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to verify payment';
-      setError(message);
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  return {
-    loading,
-    error,
-    initiateTopUp,
-    verifyPayment,
   };
 }
 

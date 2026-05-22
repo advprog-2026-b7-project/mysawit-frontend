@@ -41,30 +41,6 @@ export interface WageVariables {
   updatedAt?: string;
 }
 
-// Wallet for Admin
-export interface Wallet {
-  id: string;
-  userId: string;
-  balance: number; // In SawitDollar
-  balanceInRupiah?: number; // balance * 10,000
-  createdAt?: string;
-  updatedAt?: string;
-}
-
-// Payment Gateway Request
-export interface TopUpRequest {
-  amount: number; // In SawitDollar
-  paymentMethod: 'XENDIT' | 'MOCK';
-}
-
-// Payment Gateway Response
-export interface PaymentGatewayResponse {
-  success: boolean;
-  transactionId?: string;
-  message?: string;
-  redirectUrl?: string;
-}
-
 // Payroll Filters
 export interface PayrollFilters {
   status?: PayrollStatus;

@@ -6,7 +6,6 @@ export const PAYMENT_ROUTES = {
     paymentOverview: '/admin/payment?tab=overview',
     paymentList: '/admin/payment?tab=payroll',
     wageSettings: '/admin/payment?tab=settings',
-    wallet: '/admin/payment?tab=wallet',
   },
 
   buruh: {
@@ -49,24 +48,11 @@ export const PAYMENT_ROUTES = {
       update: '/api/wage-variables',
     },
 
-    wallet: {
-      get: '/api/wallet',
-      byUserId: (userId: string) => `/api/wallet/user/${userId}`,
-      balance: '/api/wallet/balance',
-    },
-
-    payment: {
-      topUp: '/api/payment/top-up',
-      verify: (transactionId: string) => `/api/payment/verify/${transactionId}`,
-      payout: (payrollId: string) => `/api/payment/payout/${payrollId}`,
-    },
-
-
   },
 };
 
 export function buildApiUrl(endpoint: string, baseURL?: string): string {
-  const base = baseURL || process.env.NEXT_PUBLIC_PAYMENT_API_URL || 'http://localhost:808/api';
+  const base = baseURL || process.env.NEXT_PUBLIC_PAYMENT_API_URL || 'http://localhost:8084/api';
   return `${base}${endpoint}`;
 }
 

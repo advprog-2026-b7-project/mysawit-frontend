@@ -3,12 +3,9 @@ import {
   Payroll,
   PayrollListResponse,
   WageVariables,
-  Wallet,
   PayrollFilters,
   ApprovePayrollRequest,
   RejectPayrollRequest,
-  TopUpRequest,
-  PaymentGatewayResponse,
 } from './types';
 
 class PaymentClient {
@@ -123,71 +120,6 @@ class PaymentClient {
       throw error;
     }
   }
-
-  async getWallet(): Promise<Wallet> {
-    try {
-      const response = await this.client.get('/wallet');
-      return response.data;
-    } catch (error) {
-      console.error('Error fetching wallet:', error);
-      throw error;
-    }
-  }
-
-  
-  async getWalletByUserId(userId: string): Promise<Wallet> {
-    try {
-      const response = await this.client.get(`/wallet/user/${userId}`);
-      return response.data;
-    } catch (error) {
-      console.error('Error fetching user wallet:', error);
-      throw error;
-    }
-  }
-
-  
-  async getWalletBalance(): Promise<number> {
-    try {
-      const wallet = await this.getWallet();
-      return wallet.balance;
-    } catch (error) {
-      console.error('Error fetching wallet balance:', error);
-      throw error;
-    }
-  }
-
-  async initiateTopUp(request: TopUpRequest): Promise<PaymentGatewayResponse> {
-    try {
-      const response = await this.client.post('/payment/top-up', request);
-      return response.data;
-    } catch (error) {
-      console.error('Error initiating top-up:', error);
-      throw error;
-    }
-  }
-
-
-  async verifyPayment(transactionId: string): Promise<PaymentGatewayResponse> {
-    try {
-      const response = await this.client.post(`/payment/verify/${transactionId}`);
-      return response.data;
-    } catch (error) {
-      console.error('Error verifying payment:', error);
-      throw error;
-    }
-  }
-
-
-  async processPayout(payrollId: string): Promise<{ success: boolean; message: string }> {
-    try {
-      const response = await this.client.post(`/payment/payout/${payrollId}`);
-      return response.data;
-    } catch (error) {
-      console.error('Error processing payout:', error);
-      throw error;
-    }
-  }
-
 
   async calculatePayroll(
     workerId: string,

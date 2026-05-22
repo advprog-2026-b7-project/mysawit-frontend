@@ -1,10 +1,13 @@
 "use client";
 
 import AdminLayout from "@/components/layout/AdminLayout";
+import { useRoleDashboard } from "@/features/admin/useRoleDashboard";
 
-export default function PaymentPage() {
+export default function MandorTeamPage() {
+  const { user, loading } = useRoleDashboard("MANDOR");
+
   return (
-    <AdminLayout activePage="Payroll">
+    <AdminLayout activePage="My Team" currentUser={user}>
       <div style={{ padding: "32px 0" }}>
         <h1
           style={{
@@ -15,7 +18,7 @@ export default function PaymentPage() {
             margin: 0,
           }}
         >
-          Payroll
+          My Team
         </h1>
         <p
           style={{
@@ -26,7 +29,7 @@ export default function PaymentPage() {
             margin: "8px 0 0 0",
           }}
         >
-          Manage worker payments and payroll records
+          {loading ? "Loading..." : "Team management coming soon."}
         </p>
       </div>
     </AdminLayout>

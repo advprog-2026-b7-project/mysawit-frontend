@@ -60,11 +60,6 @@ export default function HarvestHistoryList({
     return `${totalElements.toLocaleString("id-ID")} harvest submission${totalElements === 1 ? "" : "s"} found.`;
   }, [loading, totalElements]);
 
-  const reload = useCallback(() => {
-    setPage(0);
-    setStatus(initialStatus);
-  }, [initialStatus]);
-
   const approve = useCallback(async (harvestId: string) => {
     setReviewingId(harvestId);
     setError(null);

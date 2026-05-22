@@ -118,7 +118,11 @@ function CreateShipmentForm({ plantationId, onCreated, onCancel }: CreateFormPro
   const toggleHarvest = (id: string) => {
     setSelectedHarvestIds((prev) => {
       const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
       return next;
     });
   };
@@ -458,7 +462,7 @@ export default function MandorShipmentList() {
               color: "#52443D",
             }}
           >
-            Monitor and manage your plantation's ongoing deliveries
+            Monitor and manage your plantation&apos;s ongoing deliveries
           </p>
         </div>
         <button

@@ -1,35 +1,33 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { deliveryApi } from "@/features/delivery/api";
-import type { CreateShipmentRequest } from "@/features/delivery/types";
+import { deliveryApiClient } from "@/features/delivery/deliveryApi";
+import type { DriverItem } from "@/features/delivery/deliveryTypes";
 import styles from "./ShipmentForm.module.css";
 
 interface ShipmentFormProps {
     onSuccess?: (shipmentId: string) => void;
 }
 
-const initialFormState: CreateShipmentRequest = {
-    plantationId: "",
-    mandorId: "",
-    totalWeightKg: 0,
-};
-
 export default function ShipmentForm({ onSuccess }: ShipmentFormProps) {
-    const [formData, setFormData] = useState<CreateShipmentRequest>(initialFormState);
+    const [harvestIds, setHarvestIds] = useState("");
+    const [driverId, setDriverId] = useState("");
+    const [plantationId, setPlantationId] = useState<string | null>(null);
+    const [drivers, setDrivers] = useState<DriverItem[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState<string | null>(null);
 
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const { name, value } = e.target;
-        setFormData((prev) => ({
-            ...prev,
-            [name]: name === "totalWeightKg" ? (value ? Number(value) : 0) : value,
-        }));
-    };
-
-    const resetForm = () => setFormData(initialFormState);
+    useEffect(() => {
+        deliveryApiClient.getMyPlantationId()
+            .then((pid) => {
+                setPlantationId(pid);
+                return deliveryApiClient.getAvailableDrivers(pid);
+            })
+            .then(setDrivers)
+            .catch(() => undefined);
+    }, []);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -38,18 +36,20 @@ export default function ShipmentForm({ onSuccess }: ShipmentFormProps) {
         setSuccess(null);
 
         try {
-            if (!formData.plantationId) throw new Error("Plantation ID is required");
-            if (!formData.mandorId) throw new Error("Mandor ID is required");
-            if (formData.totalWeightKg <= 0) throw new Error("Weight must be greater than 0");
+            const ids = harvestIds.split(",").map((s) => s.trim()).filter(Boolean);
+            if (ids.length === 0) throw new Error("At least one harvest ID is required");
+            if (!driverId) throw new Error("Driver is required");
 
-            const response = await deliveryApi.createShipment(formData);
+            const response = await deliveryApi.createShipment({
+                harvestIds: ids,
+                driverId,
+            });
             setSuccess(`Shipment created! ID: ${response.id}`);
-            resetForm();
+            setHarvestIds("");
+            setDriverId("");
             if (onSuccess) onSuccess(response.id);
         } catch (err: unknown) {
-            // Kita cek: "Apakah err ini adalah instance dari Error?"
             const errorMessage = err instanceof Error ? err.message : "An unexpected error occurred";
-
             setError(errorMessage);
             console.error("Error creating shipment:", err);
         } finally {
@@ -62,24 +62,27 @@ export default function ShipmentForm({ onSuccess }: ShipmentFormProps) {
             <h1 className={styles.title}>Shipment Registration</h1>
             <p className={styles.subtitle}>Register new delivery shipment data</p>
 
+            {plantationId && (
+                <p className={styles.subtitle}>Plantation: {plantationId}</p>
+            )}
+
             {error && <div className={`${styles.alert} ${styles.alertError}`}><strong>Error!</strong> {error}</div>}
             {success && <div className={`${styles.alert} ${styles.alertSuccess}`}><strong>Success!</strong> {success}</div>}
 
             <form onSubmit={handleSubmit}>
                 <div className={styles.formGroup}>
-                    <label htmlFor="plantationId">Plantation ID <span className={styles.required}>*</span></label>
-                    <input type="text" id="plantationId" name="plantationId" value={formData.plantationId} onChange={handleInputChange} required />
+                    <label htmlFor="harvestIds">Harvest IDs (comma separated) <span className={styles.required}>*</span></label>
+                    <input type="text" id="harvestIds" name="harvestIds" value={harvestIds} onChange={(e) => setHarvestIds(e.target.value)} placeholder="e.g. uuid-1, uuid-2" required />
                 </div>
 
                 <div className={styles.formGroup}>
-                    <label htmlFor="mandorId">Mandor ID <span className={styles.required}>*</span></label>
-                    <input type="text" id="mandorId" name="mandorId" value={formData.mandorId} onChange={handleInputChange} required />
-                </div>
-
-                <div className={styles.formGroup}>
-                    <label htmlFor="totalWeightKg">Total Weight (kg) <span className={styles.required}>*</span></label>
-                    <input type="number" id="totalWeightKg" name="totalWeightKg" value={formData.totalWeightKg || ""} onChange={handleInputChange} min="0" step="0.01" required />
-                    <div className={styles.hint}>Max 400kg allowed</div>
+                    <label htmlFor="driverId">Driver <span className={styles.required}>*</span></label>
+                    <select id="driverId" name="driverId" value={driverId} onChange={(e) => setDriverId(e.target.value)} required>
+                        <option value="">Select a driver</option>
+                        {drivers.map((d) => (
+                            <option key={d.id} value={d.id}>{d.name || d.id}</option>
+                        ))}
+                    </select>
                 </div>
 
                 <div className={styles.buttonGroup}>

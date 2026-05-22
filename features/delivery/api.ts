@@ -1,27 +1,13 @@
-import {CreateShipmentRequest, Shipment} from "@/features/delivery/types";
-
-const BASE_URL = 'http://localhost:8080/deliveries';
+import { deliveryApiClient } from "@/features/delivery/deliveryApi";
+import type { CreateShipmentPayload, ShipmentResponse } from "@/features/delivery/deliveryTypes";
 
 export const deliveryApi = {
-    // POST: Buat pengiriman baru
-    createShipment: async (data: CreateShipmentRequest): Promise<Shipment> => {
-        const response = await fetch(BASE_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data),
-        });
-        if (!response.ok) throw new Error('Gagal membuat pengiriman');
-        return response.json();
-    },
+  createShipment: async (data: CreateShipmentPayload): Promise<ShipmentResponse> => {
+    return deliveryApiClient.createShipment(data);
+  },
 
-    // PATCH: Assign Driver (Yang tadi kita tes di Postman pakai PATCH)
-    assignDriver: async (id: string, driverId: string): Promise<Shipment> => {
-        const response = await fetch(`${BASE_URL}/${id}/assign-driver`, {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ driverId }),
-        });
-        if (!response.ok) throw new Error('Gagal menugaskan supir');
-        return response.json();
-    },
+  assignDriver: async (id: string, driverId: string): Promise<ShipmentResponse> => {
+    void driverId;
+    return deliveryApiClient.updateStatus(id, "MEMUAT");
+  },
 };

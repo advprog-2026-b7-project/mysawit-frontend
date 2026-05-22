@@ -15,19 +15,25 @@ function buildTargetUrl(baseUrl: string, path: string[], search: string) {
   return `${normalizedBase}/api/${encodedPath}${search}`;
 }
 
-async function proxyRequest(request: Request, context: RouteContext) {
-  const { path = [] } = await context.params;
-  const sourceUrl = new URL(request.url);
-  const targetUrl = buildTargetUrl(PLANTATION_BACKEND_URL, path, sourceUrl.search);
+function resolveAuthorization(request: Request) {
+  const bearerToken = request.headers.get("authorization");
+  if (bearerToken) return bearerToken;
 
   const cookieHeader = request.headers.get("cookie") ?? "";
   const tokenMatch = cookieHeader.match(/(?:^|;\s*)access_token=([^;]+)/);
   const rawToken = tokenMatch?.[1]?.trim();
-  const accessToken = rawToken ? decodeURIComponent(rawToken) : undefined;
+  return rawToken ? `Bearer ${decodeURIComponent(rawToken)}` : undefined;
+}
 
-  if (!accessToken) {
+async function proxyRequest(request: Request, context: RouteContext) {
+  const { path = [] } = await context.params;
+  const sourceUrl = new URL(request.url);
+  const targetUrl = buildTargetUrl(PLANTATION_BACKEND_URL, path, sourceUrl.search);
+  const authorization = resolveAuthorization(request);
+
+  if (!authorization) {
     return Response.json(
-      { status: "error", message: "No access_token cookie — not authenticated" },
+      { status: "error", message: "Missing access token" },
       { status: 401 }
     );
   }
@@ -39,7 +45,7 @@ async function proxyRequest(request: Request, context: RouteContext) {
       headers.set(key, value);
     }
   }
-  headers.set("authorization", `Bearer ${accessToken}`);
+  headers.set("authorization", authorization);
 
   const init: RequestInit & { duplex?: "half" } = {
     method: request.method,

@@ -1,7 +1,5 @@
 const HARVEST_BACKEND_URL =
-  process.env.HARVEST_API_URL ||
-  process.env.NEXT_PUBLIC_HARVEST_API_URL ||
-  "http://localhost:8083";
+  process.env.HARVEST_BACKEND ?? "http://localhost:8083";
 
 type RouteContext = {
   params: Promise<{

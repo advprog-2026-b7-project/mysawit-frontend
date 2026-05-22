@@ -5,15 +5,15 @@ import { fileURLToPath } from "node:url";
 const projectRoot = dirname(fileURLToPath(import.meta.url));
 
 const authApiUrl =
-  process.env.NEXT_PUBLIC_AUTH_API_URL ?? "http://localhost:8080";
+  process.env.AUTH_BACKEND ?? "http://localhost:8080";
 const deliveryApiUrl =
-  process.env.NEXT_PUBLIC_DELIVERY_API_URL ?? "http://localhost:8082";
+  process.env.DELIVERY_BACKEND ?? "http://localhost:8082";
 const paymentApiUrl =
-  process.env.NEXT_PUBLIC_PAYMENT_API_URL ?? "http://localhost:8084";
+  process.env.PAYMENT_BACKEND ?? "http://localhost:8084";
 const plantationApiUrl =
-  process.env.NEXT_PUBLIC_PLANTATION_API_URL ?? "http://localhost:8081";
+  process.env.PLANTATION_BACKEND ?? "http://localhost:8081";
 const harvestApiUrl =
-  process.env.NEXT_PUBLIC_HARVEST_API_URL ?? "http://localhost:8083";
+  process.env.HARVEST_BACKEND ?? "http://localhost:8083";
 
 const nextConfig: NextConfig = {
   turbopack: {

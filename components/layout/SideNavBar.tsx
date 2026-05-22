@@ -100,7 +100,7 @@ export default function SideNavBar({
     void logoutApi()
       .catch(() => undefined)
       .finally(() => {
-        router.push("/auth/login");
+        router.push("/login");
       });
   };
 

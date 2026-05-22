@@ -38,7 +38,7 @@ const PayrollList: React.FC<PayrollListProps> = ({
     setActiveFilters(newFilters);
     onFilterChange?.(newFilters);
   };
-
+ process.env.NEXT_PUBLIC_PAYMENT_API_URL || "http://localhost:8084"
   const handleDateFilter = (startDate: string, endDate: string) => {
     const newFilters = { ...activeFilters };
     if (startDate) newFilters.startDate = startDate;
@@ -52,8 +52,6 @@ const PayrollList: React.FC<PayrollListProps> = ({
       PENDING: 'bg-yellow-100 text-yellow-800',
       APPROVED: 'bg-green-100 text-green-800',
       REJECTED: 'bg-red-100 text-red-800',
-      SUCCESS: 'bg-green-100 text-green-800',
-      FAILED: 'bg-red-100 text-red-800',
     };
     return statusColors[status] || 'bg-gray-100 text-gray-800';
   };

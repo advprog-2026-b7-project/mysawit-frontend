@@ -1,7 +1,5 @@
 const PAYMENT_BACKEND_URL =
-  process.env.PAYMENT_API_URL ||
-  process.env.NEXT_PUBLIC_PAYMENT_API_URL ||
-  "http://localhost:8084/api";
+   process.env.NEXT_PUBLIC_PAYMENT_API_URL || "http://localhost:8084"
 
 type RouteContext = {
   params: Promise<{

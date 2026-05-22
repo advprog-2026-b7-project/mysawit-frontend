@@ -1,5 +1,5 @@
 // Payroll Status
-export type PayrollStatus = 'PENDING' | 'APPROVED' | 'REJECTED' | 'SUCCESS' | 'FAILED';
+export type PayrollStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
 
 // Payroll Interface
 export interface Payroll {

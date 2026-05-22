@@ -21,8 +21,6 @@ const PayrollCard: React.FC<PayrollCardProps> = ({ payroll, isAdmin = false, onA
       PENDING: { bg: 'bg-yellow-50', text: 'text-yellow-800', badge: 'bg-yellow-100 text-yellow-800' },
       APPROVED: { bg: 'bg-green-50', text: 'text-green-800', badge: 'bg-green-100 text-green-800' },
       REJECTED: { bg: 'bg-red-50', text: 'text-red-800', badge: 'bg-red-100 text-red-800' },
-      SUCCESS: { bg: 'bg-green-50', text: 'text-green-800', badge: 'bg-green-100 text-green-800' },
-      FAILED: { bg: 'bg-red-50', text: 'text-red-800', badge: 'bg-red-100 text-red-800' },
     };
     return statusColors[status] || { bg: 'bg-gray-50', text: 'text-gray-800', badge: 'bg-gray-100 text-gray-800' };
   };
@@ -61,7 +59,7 @@ const PayrollCard: React.FC<PayrollCardProps> = ({ payroll, isAdmin = false, onA
   return (
     <>
       <div className={`${colors.bg} rounded-3xl border border-[#E3D4CD] p-5 shadow-[0_10px_30px_rgba(91,32,18,0.06)] transition-all duration-200 hover:shadow-[0_14px_36px_rgba(91,32,18,0.1)]`} style={{
-        borderLeftColor: payroll.status === 'PENDING' ? '#FBBF24' : payroll.status === 'APPROVED' ? '#10B981' : payroll.status === 'SUCCESS' ? '#10B981' : '#EF4444'
+        borderLeftColor: payroll.status === 'PENDING' ? '#FBBF24' : payroll.status === 'APPROVED' ? '#10B981' : '#EF4444'
       }}>
         <div className="mb-4 flex items-start justify-between border-b border-[#E7D7D0] pb-4">
           <div className="flex-1">

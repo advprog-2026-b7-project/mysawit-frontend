@@ -10,7 +10,7 @@ import {
 } from './types';
 
 const paymentClient = new PaymentClient(
-  process.env.NEXT_PUBLIC_PAYMENT_API_URL || '/api'
+   process.env.NEXT_PUBLIC_PAYMENT_API_URL || "http://localhost:8084"
 );
 
 

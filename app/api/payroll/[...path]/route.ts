@@ -20,13 +20,29 @@ async function proxyRequest(request: Request, context: RouteContext) {
   const sourceUrl = new URL(request.url);
   const targetUrl = buildTargetUrl(PAYMENT_BACKEND_URL, path, sourceUrl.search);
 
-  const headers = new Headers();
-  for (const [key, value] of request.headers.entries()) {
-    const lowerKey = key.toLowerCase();
-    if (["accept", "authorization", "content-type", "cookie"].includes(lowerKey)) {
-      headers.set(key, value);
-    }
+  const cookieHeader = request.headers.get("cookie") ?? "";
+  const tokenMatch = cookieHeader.match(/(?:^|;\s*)access_token=([^;]+)/);
+  const rawToken = tokenMatch?.[1]?.trim();
+  const accessToken = rawToken ? decodeURIComponent(rawToken) : undefined;
+
+  if (!accessToken) {
+    return Response.json(
+      { status: "error", message: "No access_token cookie — not authenticated" },
+      { status: 401 }
+    );
   }
+
+  const contentType = request.headers.get("content-type") ?? "";
+  const isMultipart = contentType.toLowerCase().startsWith("multipart/form-data");
+
+  const headers = new Headers();
+  if (request.headers.has("accept")) {
+    headers.set("accept", request.headers.get("accept")!);
+  }
+  if (!isMultipart && contentType) {
+    headers.set("content-type", contentType);
+  }
+  headers.set("authorization", `Bearer ${accessToken}`);
 
   const init: RequestInit & { duplex?: "half" } = {
     method: request.method,
@@ -35,8 +51,17 @@ async function proxyRequest(request: Request, context: RouteContext) {
   };
 
   if (!["GET", "HEAD"].includes(request.method)) {
-    init.body = request.body;
-    init.duplex = "half";
+    if (isMultipart) {
+      const incoming = await request.formData();
+      const outgoing = new FormData();
+      for (const [key, value] of incoming.entries()) {
+        outgoing.append(key, value);
+      }
+      init.body = outgoing;
+    } else {
+      init.body = request.body;
+      init.duplex = "half";
+    }
   }
 
   try {

@@ -4,8 +4,6 @@ import {
   PayrollListResponse,
   WageVariables,
   PayrollFilters,
-  ApprovePayrollRequest,
-  RejectPayrollRequest,
 } from './types';
 
 class PaymentClient {
@@ -16,19 +14,10 @@ class PaymentClient {
     this.baseURL = baseURL;
     this.client = axios.create({
       baseURL,
+      withCredentials: true,
       headers: {
         'Content-Type': 'application/json',
       },
-    });
-
-    this.client.interceptors.request.use((config) => {
-      if (typeof window !== 'undefined' && this.baseURL.startsWith('/')) {
-        const cookie = document.cookie;
-        if (cookie) {
-          config.headers.Cookie = cookie;
-        }
-      }
-      return config;
     });
   }
 

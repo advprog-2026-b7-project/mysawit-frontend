@@ -1,5 +1,5 @@
 const DELIVERY_BACKEND_URL =
-  process.env.DELIVERY_BACKEND ?? "http://localhost:8082";
+  process.env.DELIVERY_API_URL || "http://localhost:8082";
 
 type RouteContext = {
   params: Promise<{ path?: string[] }>;

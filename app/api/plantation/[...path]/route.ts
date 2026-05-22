@@ -1,5 +1,7 @@
 const PLANTATION_BACKEND_URL =
-  process.env.PLANTATION_BACKEND ?? "http://localhost:8081";
+  process.env.PLANTATION_API_URL ||
+  process.env.NEXT_PUBLIC_PLANTATION_API_URL ||
+  "http://localhost:8081";
 
 type RouteContext = {
   params: Promise<{

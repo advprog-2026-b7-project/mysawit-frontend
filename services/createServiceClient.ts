@@ -42,7 +42,7 @@ export function createServiceClient(baseURL: string): AxiosInstance {
           path.startsWith("/api/plantation/") ||
           path.startsWith("/api/delivery/");
         if (isSessionEndpoint || isProxyEndpoint) {
-          window.location.href = "/login";
+          window.location.href = "/auth/login";
         }
       }
       return Promise.reject(error);

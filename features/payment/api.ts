@@ -9,7 +9,7 @@ import {
 class PaymentClient {
   private client: AxiosInstance;
   private baseURL: string;
-  constructor(baseURL: string = process.env.NEXT_PUBLIC_PAYMENT_API_URL || "http://localhost:8084") {
+  constructor(baseURL: string = process.env.NEXT_PUBLIC_PAYMENT_API_URL || "/api") {
     this.baseURL = baseURL;
     this.client = axios.create({
       baseURL,
@@ -32,7 +32,7 @@ class PaymentClient {
         if (filters.pageSize) params.append('pageSize', filters.pageSize.toString());
       }
 
-      const response = await this.client.get('api/payroll/list', { params });
+      const response = await this.client.get('/payroll/list', { params });
       return response.data;
     } catch (error) {
       console.error('Error fetching payrolls:', error);
@@ -42,7 +42,7 @@ class PaymentClient {
 
   async getPayrollsByType(payrollType: string): Promise<PayrollListResponse> {
     try {
-      const response = await this.client.get(`api/payroll/by-type/${payrollType}`);
+      const response = await this.client.get(`/payroll/by-type/${payrollType}`);
       return response.data;
     } catch (error) {
       console.error('Error fetching payrolls by type:', error);
@@ -52,7 +52,7 @@ class PaymentClient {
 
   async getPayrollById(id: string): Promise<Payroll> {
     try {
-      const response = await this.client.get(`api/payroll/${id}/status`);
+      const response = await this.client.get(`/payroll/${id}/status`);
       return response.data;
     } catch (error) {
       console.error('Error fetching payroll:', error);
@@ -72,7 +72,7 @@ class PaymentClient {
         if (filters.pageSize) params.append('pageSize', filters.pageSize.toString());
       }
 
-      const response = await this.client.get('api/payroll/worker', { params });
+      const response = await this.client.get('/payroll/worker', { params });
       return response.data;
     } catch (error) {
       console.error('Error fetching worker payrolls:', error);
@@ -82,7 +82,7 @@ class PaymentClient {
 
   async approvePayroll(payrollId: string): Promise<Payroll> {
     try {
-      const response = await this.client.patch(`api/payroll/${payrollId}/approve`);
+      const response = await this.client.patch(`/payroll/${payrollId}/approve`);
       return response.data;
     } catch (error) {
       console.error('Error approving payroll:', error);
@@ -92,7 +92,7 @@ class PaymentClient {
 
   async rejectPayroll(payrollId: string, reason: string): Promise<Payroll> {
     try {
-      const response = await this.client.patch(`api/payroll/${payrollId}/reject`, { reason });
+      const response = await this.client.patch(`/payroll/${payrollId}/reject`, { reason });
       return response.data;
     } catch (error) {
       console.error('Error rejecting payroll:', error);
@@ -103,7 +103,7 @@ class PaymentClient {
 
   async getWageVariables(): Promise<WageVariables> {
     try {
-      const response = await this.client.get('api/wage-variables');
+      const response = await this.client.get('/wage-variables');
       return response.data;
     } catch (error) {
       console.error('Error fetching wage variables:', error);
@@ -113,7 +113,7 @@ class PaymentClient {
 
   async updateWageVariables(variables: WageVariables): Promise<WageVariables> {
     try {
-      const response = await this.client.post('api/wage-variables', variables);
+      const response = await this.client.post('/wage-variables', variables);
       return response.data;
     } catch (error) {
       console.error('Error updating wage variables:', error);
@@ -123,7 +123,7 @@ class PaymentClient {
 
   async createHarvestPayroll(payload: Record<string, unknown>): Promise<unknown> {
     try {
-      const response = await this.client.post('api/payroll/harvest/create', payload);
+      const response = await this.client.post('/payroll/harvest/create', payload);
       return response.data;
     } catch (error) {
       console.error('Error creating harvest payroll:', error);
@@ -133,7 +133,7 @@ class PaymentClient {
 
   async createDeliveryPayroll(payload: Record<string, unknown>): Promise<unknown> {
     try {
-      const response = await this.client.post('api/payroll/delivery/create', payload);
+      const response = await this.client.post('/payroll/delivery/create', payload);
       return response.data;
     } catch (error) {
       console.error('Error creating delivery payroll:', error);

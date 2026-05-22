@@ -1,7 +1,8 @@
 import { createServiceClient } from "./createServiceClient";
 
-const deliveryClient = createServiceClient(
-  process.env.NEXT_PUBLIC_DELIVERY_API_URL || "http://localhost:8083"
-);
+// Route all delivery requests through the Next.js server-side proxy
+// at /api/delivery/[...path] so the HttpOnly access_token cookie can be
+// read server-side and injected as Authorization: Bearer.
+const deliveryClient = createServiceClient("/api/delivery");
 
 export default deliveryClient;

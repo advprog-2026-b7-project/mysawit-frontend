@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import type { AssignmentResponse, UserProfile } from "../types";
-import { getAllAssignmentsApi, deleteAssignmentApi, getUsersByRoleApi } from "../api";
+import React, { useCallback, useState, useEffect } from "react";
+import type { AssignmentResponse, PageResponse, UserProfile } from "../types";
+import { getAllAssignmentsPageApi, deleteAssignmentApi, getUsersByRolePageApi } from "../api";
 import Button from "@/components/ui/Button";
 import ReassignmentModal from "./ReassignmentModal";
 
@@ -15,19 +15,26 @@ export default function AssignmentList({
   onRefresh,
   isLoading: externalLoading = false,
 }: AssignmentListProps) {
-  const [assignments, setAssignments] = useState<AssignmentResponse[]>([]);
+  const [assignmentsPage, setAssignmentsPage] = useState<PageResponse<AssignmentResponse>>({
+    content: [],
+    page: 0,
+    size: 10,
+    totalElements: 0,
+    totalPages: 0,
+  });
   const [mandors, setMandors] = useState<UserProfile[]>([]);
+  const [page, setPage] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedAssignment, setSelectedAssignment] = useState<AssignmentResponse | null>(null);
   const [showReassignModal, setShowReassignModal] = useState(false);
 
-  const loadAssignments = async () => {
+  const loadAssignments = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const data = await getAllAssignmentsApi();
-      setAssignments(data);
+      const data = await getAllAssignmentsPageApi(page, 10);
+      setAssignmentsPage(data);
     } catch (err) {
       const message =
         err instanceof Error ? err.message : "Gagal mengambil data assignment";
@@ -35,30 +42,28 @@ export default function AssignmentList({
     } finally {
       setLoading(false);
     }
-  };
+  }, [page]);
 
-  const loadMandors = async () => {
+  const loadMandors = useCallback(async () => {
     try {
-      const data = await getUsersByRoleApi("MANDOR");
-      setMandors(data);
+      const data = await getUsersByRolePageApi("MANDOR", 0, 100);
+      setMandors(data.content);
     } catch (err) {
       console.error("Gagal mengambil data Mandor:", err);
     }
-  };
+  }, []);
 
   useEffect(() => {
     loadAssignments();
     loadMandors();
-  }, []);
+  }, [loadAssignments, loadMandors]);
 
   const handleDeleteAssignment = async (assignmentId: string) => {
     if (!confirm("Yakin ingin menghapus assignment ini?")) return;
 
     try {
       await deleteAssignmentApi(assignmentId);
-      setAssignments((prev) =>
-        prev.filter((a) => a.id !== assignmentId)
-      );
+      await loadAssignments();
       onRefresh?.();
     } catch (err) {
       const message =
@@ -78,6 +83,7 @@ export default function AssignmentList({
   };
 
   const isLoading = loading || externalLoading;
+  const assignments = assignmentsPage.content;
 
   return (
     <div
@@ -196,6 +202,30 @@ export default function AssignmentList({
           </table>
         )}
       </div>
+
+      {assignmentsPage.totalPages > 1 && (
+        <div className="mt-5 flex items-center justify-end gap-3 text-sm font-semibold" style={{ color: "#52443D" }}>
+          <Button
+            type="button"
+            variant="secondary"
+            disabled={page === 0 || isLoading}
+            onClick={() => setPage((current) => Math.max(0, current - 1))}
+          >
+            Prev
+          </Button>
+          <span>
+            Page {assignmentsPage.page + 1} of {assignmentsPage.totalPages}
+          </span>
+          <Button
+            type="button"
+            variant="secondary"
+            disabled={assignmentsPage.page + 1 >= assignmentsPage.totalPages || isLoading}
+            onClick={() => setPage((current) => current + 1)}
+          >
+            Next
+          </Button>
+        </div>
+      )}
 
       <ReassignmentModal
         isOpen={showReassignModal}

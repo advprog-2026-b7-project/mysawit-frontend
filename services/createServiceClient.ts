@@ -21,13 +21,17 @@ export function createServiceClient(baseURL: string): AxiosInstance {
     (response) => response,
     (error) => {
       if (typeof window !== "undefined" && error?.response?.status === 401) {
-        const url: string = error?.config?.url ?? "";
-        const isAuthEndpoint =
-          url.includes("/api/auth/login") ||
-          url.includes("/api/auth/register") ||
-          url.includes("/api/auth/google-login");
-        if (!isAuthEndpoint) {
-          window.location.href = "/login";
+        const rawUrl: string = error?.config?.url ?? "";
+        const path = rawUrl.split("?")[0];
+        const isSessionEndpoint =
+          path.endsWith("/api/auth/me") ||
+          path.endsWith("/api/auth/logout");
+        const isProxyEndpoint =
+          path.startsWith("/api/harvest/") ||
+          path.startsWith("/api/plantation/") ||
+          path.startsWith("/api/delivery/");
+        if (isSessionEndpoint || isProxyEndpoint) {
+          window.location.href = "/auth/login";
         }
       }
       return Promise.reject(error);

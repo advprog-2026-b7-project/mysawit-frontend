@@ -1,7 +1,5 @@
 import { createServiceClient } from "./createServiceClient";
 
-const plantationClient = createServiceClient(
-  process.env.NEXT_PUBLIC_PLANTATION_API_URL || "/api/plantation"
-);
+const plantationClient = createServiceClient("/api/plantation");
 
 export default plantationClient;

@@ -1,12 +1,19 @@
-const PLANTATION_BACKEND_URL =
-  process.env.PLANTATION_API_URL ||
-  process.env.NEXT_PUBLIC_PLANTATION_API_URL ||
-  "http://localhost:8081";
+/**
+ * Server-side proxy for mysawit-delivery.
+ *
+ * Reads the HttpOnly access_token cookie and injects it as
+ * Authorization: Bearer <token> so the delivery backend's JwtFilter
+ * can authenticate the request.
+ *
+ * Frontend calls: /api/delivery/v1/deliveries/...
+ * Proxied to:     DELIVERY_API_URL/api/v1/deliveries/...
+ */
+
+const DELIVERY_BACKEND_URL =
+  process.env.DELIVERY_API_URL || "http://localhost:8082";
 
 type RouteContext = {
-  params: Promise<{
-    path?: string[];
-  }>;
+  params: Promise<{ path?: string[] }>;
 };
 
 function buildTargetUrl(baseUrl: string, path: string[], search: string) {
@@ -18,7 +25,7 @@ function buildTargetUrl(baseUrl: string, path: string[], search: string) {
 async function proxyRequest(request: Request, context: RouteContext) {
   const { path = [] } = await context.params;
   const sourceUrl = new URL(request.url);
-  const targetUrl = buildTargetUrl(PLANTATION_BACKEND_URL, path, sourceUrl.search);
+  const targetUrl = buildTargetUrl(DELIVERY_BACKEND_URL, path, sourceUrl.search);
 
   const cookieHeader = request.headers.get("cookie") ?? "";
   const tokenMatch = cookieHeader.match(/(?:^|;\s*)access_token=([^;]+)/);
@@ -32,12 +39,14 @@ async function proxyRequest(request: Request, context: RouteContext) {
     );
   }
 
+  const contentType = request.headers.get("content-type") ?? "";
+
   const headers = new Headers();
-  for (const [key, value] of request.headers.entries()) {
-    const lowerKey = key.toLowerCase();
-    if (["accept", "content-type"].includes(lowerKey)) {
-      headers.set(key, value);
-    }
+  if (request.headers.has("accept")) {
+    headers.set("accept", request.headers.get("accept")!);
+  }
+  if (contentType) {
+    headers.set("content-type", contentType);
   }
   headers.set("authorization", `Bearer ${accessToken}`);
 
@@ -63,11 +72,12 @@ async function proxyRequest(request: Request, context: RouteContext) {
       statusText: response.statusText,
       headers: responseHeaders,
     });
-  } catch {
+  } catch (err) {
+    console.error("[delivery-proxy] fetch failed:", err);
     return Response.json(
       {
         status: "error",
-        message: "Plantation service is unreachable",
+        message: `Delivery service is unreachable at ${DELIVERY_BACKEND_URL}`,
       },
       { status: 502 }
     );
@@ -82,7 +92,7 @@ export function POST(request: Request, context: RouteContext) {
   return proxyRequest(request, context);
 }
 
-export function PUT(request: Request, context: RouteContext) {
+export function PATCH(request: Request, context: RouteContext) {
   return proxyRequest(request, context);
 }
 

@@ -27,11 +27,21 @@ export interface GetUsersFiltersRequest {
   name?: string;
   email?: string;
   role?: "BURUH" | "MANDOR" | "ADMIN" | "SUPIR";
+  page?: number;
+  size?: number;
 }
 
 export interface UserListResponse {
   data: UserProfile[];
   total: number;
+}
+
+export interface PageResponse<T> {
+  content: T[];
+  page: number;
+  size: number;
+  totalElements: number;
+  totalPages: number;
 }
 
 // Assignment API Types

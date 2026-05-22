@@ -68,8 +68,8 @@ app/
 
 | Route         | URL              |
 | ------------- | ---------------- |
-| Login         | `/auth/login`    |
-| Register      | `/auth/register` |
+| Login         | `/login`         |
+| Register      | `/register`      |
 | Dashboard     | `/dashboard`     |
 | Users         | `/users`         |
 | Plantation    | `/plantation`    |
@@ -84,11 +84,11 @@ app/
 
 ### 4.1 Login
 
-- **Route:** `/auth/login`
+- **Route:** `/login`
 - **Roles:** Public
 - **Component:** `features/auth/components/LoginForm`
 - **Fields:** `email`, `password`
-- **API:** `POST /auth/login`
+- **API:** `POST /api/auth/login`
 - **Response:**
   ```json
   { "token": "...", "user": "...", "role": "..." }
@@ -97,11 +97,11 @@ app/
 
 ### 4.2 Register
 
-- **Route:** `/auth/register`
+- **Route:** `/register`
 - **Component:** `features/auth/components/RegisterForm`
 - **Fields (common):** `name`, `email`, `password`
 - **Fields (Mandor):** `certificationNumber`
-- **API:** `POST /auth/register`
+- **API:** `POST /api/auth/register`
 
 ---
 

@@ -43,7 +43,7 @@ class PlantationClient {
 		if (filters?.name) params.append("name", filters.name);
 		if (filters?.code) params.append("code", filters.code);
 		const qs = params.toString();
-		const url = qs ? `/api/v1/plantations?${qs}` : "/api/v1/plantations";
+		const url = qs ? `v1/plantations?${qs}` : "v1/plantations";
 		try {
 			const response = await plantationServiceClient.get<ApiSuccessResponse<PagedData<PlantationListItem> | PlantationListItem[]>>(url);
 			const data = response.data.data;
@@ -60,7 +60,7 @@ class PlantationClient {
 	async getById(id: string): Promise<PlantationDetailResponse> {
 		try {
 			const response = await plantationServiceClient.get<ApiSuccessResponse<PlantationDetailResponse>>(
-				`/api/v1/plantations/${id}`
+				`v1/plantations/${id}`
 			);
 			return response.data.data;
 		} catch (err) {
@@ -71,7 +71,7 @@ class PlantationClient {
 	async createPlantation(request: PlantationCreateRequest): Promise<PlantationResponse> {
 		try {
 			const response = await plantationServiceClient.post<ApiSuccessResponse<PlantationResponse>>(
-				"/api/v1/plantations",
+				"v1/plantations",
 				request
 			);
 			return response.data.data;
@@ -82,7 +82,7 @@ class PlantationClient {
 
 	async assignMandor(plantationId: string, request: AssignMandorRequest): Promise<void> {
 		try {
-			await plantationServiceClient.post(`/api/v1/plantations/${plantationId}/mandor`, request);
+			await plantationServiceClient.post(`v1/plantations/${plantationId}/mandor`, request);
 		} catch (err) {
 			throw new Error(extractErrorMessage(err));
 		}
@@ -90,7 +90,7 @@ class PlantationClient {
 
 	async unassignMandor(plantationId: string, request: ReassignPlantationRequest): Promise<void> {
 		try {
-			await plantationServiceClient.delete(`/api/v1/plantations/${plantationId}/mandor`, {
+			await plantationServiceClient.delete(`v1/plantations/${plantationId}/mandor`, {
 				data: request,
 			});
 		} catch (err) {
@@ -100,7 +100,7 @@ class PlantationClient {
 
 	async assignDriver(plantationId: string, request: AssignDriverRequest): Promise<void> {
 		try {
-			await plantationServiceClient.post(`/api/v1/plantations/${plantationId}/drivers`, request);
+			await plantationServiceClient.post(`v1/plantations/${plantationId}/drivers`, request);
 		} catch (err) {
 			throw new Error(extractErrorMessage(err));
 		}
@@ -112,7 +112,7 @@ class PlantationClient {
 		request: ReassignPlantationRequest
 	): Promise<void> {
 		try {
-			await plantationServiceClient.delete(`/api/v1/plantations/${plantationId}/drivers/${driverId}`, {
+			await plantationServiceClient.delete(`v1/plantations/${plantationId}/drivers/${driverId}`, {
 				data: request,
 			});
 		} catch (err) {

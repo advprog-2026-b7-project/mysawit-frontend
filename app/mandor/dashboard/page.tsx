@@ -18,7 +18,6 @@ import {
 import { harvestHistoryClient } from "@/features/harvest/historyApi";
 import { getAssignmentsByMandorApi } from "@/features/profile/api";
 import { useRoleDashboard } from "@/features/admin/useRoleDashboard";
-import WorkerPayrollSection from "@/features/payment/components/WorkerPayrollSection";
 
 function currentMonthStart() {
   const now = new Date();
@@ -150,13 +149,6 @@ export default function MandorDashboardPage() {
           />
         </section>
 
-        {user && (
-          <WorkerPayrollSection
-            userId={user.id}
-            workerType="MANDOR"
-            workerName={displayName}
-          />
-        )}
       </div>
     </AdminLayout>
   );

@@ -15,7 +15,6 @@ import {
   DashboardStatCard,
 } from "@/components/dashboard/DashboardComponents";
 import { useRoleDashboard } from "@/features/admin/useRoleDashboard";
-import WorkerPayrollSection from "@/features/payment/components/WorkerPayrollSection";
 
 export default function SupirDashboardPage() {
   const { user, loading } = useRoleDashboard("SUPIR");
@@ -85,13 +84,6 @@ export default function SupirDashboardPage() {
           />
         </section>
 
-        {user && (
-          <WorkerPayrollSection
-            userId={user.id}
-            workerType="SUPIR_TRUK"
-            workerName={displayName}
-          />
-        )}
       </div>
     </AdminLayout>
   );

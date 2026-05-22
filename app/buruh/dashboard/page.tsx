@@ -11,7 +11,6 @@ import {
   XCircleIcon,
 } from "@/components/layout/AdminIcons";
 import {
-  DashboardFeatureCard,
   DashboardHeader,
   DashboardStatCard,
   DashboardTable,
@@ -21,7 +20,6 @@ import { getBuruhAssignment, type Assignment } from "@/features/admin/api";
 import { harvestHistoryClient } from "@/features/harvest/historyApi";
 import type { HarvestHistoryItem } from "@/features/harvest/historyTypes";
 import { useRoleDashboard } from "@/features/admin/useRoleDashboard";
-import WorkerPayrollSection from "@/features/payment/components/WorkerPayrollSection";
 
 function currentMonthStart() {
   const now = new Date();
@@ -262,13 +260,6 @@ export default function BuruhDashboardPage() {
           emptyLabel="You have not submitted any harvest yet."
         />
 
-        {user && (
-          <WorkerPayrollSection
-            userId={user.id}
-            workerType="BURUH"
-            workerName={displayName}
-          />
-        )}
       </div>
     </AdminLayout>
   );

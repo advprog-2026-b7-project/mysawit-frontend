@@ -47,8 +47,8 @@ app/
 ```
 
 These correspond to routes such as:
-- `/auth/login`
-- `/auth/register`
+- `/login`
+- `/register`
 - `/dashboard`
 - `/harvest`
 - `/delivery`

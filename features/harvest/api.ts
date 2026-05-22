@@ -40,7 +40,7 @@ class HarvestClient {
       const response = await harvestServiceClient.post<
         ApiSuccessResponse<HarvestResponse>
       >(
-        "/api/v1/harvests",
+        "v1/harvests",
         formData
       );
 

@@ -109,7 +109,7 @@ export async function getAssignmentCount(): Promise<number> {
 }
 
 export async function getPlantationCount(): Promise<number> {
-  const response = await plantationClient.get("/api/v1/plantations");
+  const response = await plantationClient.get("v1/plantations");
   const data = unwrap<unknown>(response.data);
   return Array.isArray(data) ? data.length : 0;
 }

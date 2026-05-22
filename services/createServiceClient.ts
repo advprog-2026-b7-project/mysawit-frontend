@@ -1,5 +1,6 @@
 import axios from "axios";
 import type { AxiosInstance } from "axios";
+import { getTokenCookie, setTokenCookie } from "./tokenCookie";
 
 export function createServiceClient(baseURL: string): AxiosInstance {
   const client = axios.create({
@@ -14,11 +15,21 @@ export function createServiceClient(baseURL: string): AxiosInstance {
     if (config.data instanceof FormData) {
       delete (config.headers as Record<string, string>)["Content-Type"];
     }
+    const token = getTokenCookie();
+    if (token && !config.headers.Authorization) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
     return config;
   });
 
   client.interceptors.response.use(
-    (response) => response,
+    (response) => {
+      const token = response.data?.token;
+      if (typeof token === "string") {
+        setTokenCookie(token);
+      }
+      return response;
+    },
     (error) => {
       if (typeof window !== "undefined" && error?.response?.status === 401) {
         const rawUrl: string = error?.config?.url ?? "";

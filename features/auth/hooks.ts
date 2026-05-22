@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { loginApi, registerApi, googleLoginApi, logoutApi } from "./api";
 import type { LoginRequest, RegisterRequest } from "./types";
+import { deleteTokenCookie } from "@/services/tokenCookie";
 
 export function useLogin() {
   const [loading, setLoading] = useState(false);
@@ -62,6 +63,7 @@ export function useLogout() {
     } catch {
       // ignore
     } finally {
+      deleteTokenCookie();
       setLoading(false);
       window.location.href = "/login";
     }

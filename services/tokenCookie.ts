@@ -1,10 +1,16 @@
-// Token is now stored as an HttpOnly cookie set by the backend.
-// These stubs exist so existing imports compile without changes.
+const TOKEN_STORAGE_KEY = "mysawit_access_token";
 
-export function setTokenCookie(_token: string): void {}
-
-export function getTokenCookie(): string | null {
-  return null;
+export function setTokenCookie(token: string): void {
+  if (typeof window === "undefined" || !token) return;
+  window.localStorage.setItem(TOKEN_STORAGE_KEY, token);
 }
 
-export function deleteTokenCookie(): void {}
+export function getTokenCookie(): string | null {
+  if (typeof window === "undefined") return null;
+  return window.localStorage.getItem(TOKEN_STORAGE_KEY);
+}
+
+export function deleteTokenCookie(): void {
+  if (typeof window === "undefined") return;
+  window.localStorage.removeItem(TOKEN_STORAGE_KEY);
+}

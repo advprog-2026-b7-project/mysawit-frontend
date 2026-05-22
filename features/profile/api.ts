@@ -7,20 +7,13 @@ import type {
   CreateAssignmentRequest,
   AssignmentResponse,
   ReassignmentRequest,
-  ReassignmentResponse
+  ReassignmentResponse,
+  PageResponse
 } from "./types";
 
 interface ApiEnvelope<T> {
   status?: string;
   data?: T;
-}
-
-interface PageResponse<T> {
-  content: T[];
-  page: number;
-  size: number;
-  totalElements: number;
-  totalPages: number;
 }
 
 interface MandorAssignmentsResponse {
@@ -67,10 +60,24 @@ function unwrap<T>(payload: unknown): T {
     : (payload as T);
 }
 
-function pageContent<T>(payload: unknown): T[] {
+function pageResponse<T>(payload: unknown, fallbackPage = 0, fallbackSize = 20): PageResponse<T> {
   const unwrapped = unwrap<PageResponse<T> | T[]>(payload);
-  if (Array.isArray(unwrapped)) return unwrapped;
-  return unwrapped?.content ?? [];
+  if (Array.isArray(unwrapped)) {
+    return {
+      content: unwrapped,
+      page: fallbackPage,
+      size: fallbackSize,
+      totalElements: unwrapped.length,
+      totalPages: unwrapped.length === 0 ? 0 : 1,
+    };
+  }
+  return {
+    content: unwrapped?.content ?? [],
+    page: unwrapped?.page ?? fallbackPage,
+    size: unwrapped?.size ?? fallbackSize,
+    totalElements: unwrapped?.totalElements ?? unwrapped?.content?.length ?? 0,
+    totalPages: unwrapped?.totalPages ?? 0,
+  };
 }
 
 function normalizeAssignment(raw: RawAssignmentResponse): AssignmentResponse {
@@ -109,34 +116,54 @@ export const getUserProfileApi = async (userId: string): Promise<MeResponse> => 
 };
 
 // Get all users with filters (admin only)
-export const getAllUsersApi = async (filters?: GetUsersFiltersRequest): Promise<UserProfile[]> => {
+export const getAllUsersPageApi = async (
+  filters: GetUsersFiltersRequest = {},
+): Promise<PageResponse<UserProfile>> => {
   const params = new URLSearchParams();
 
   if (filters?.name) params.append("name", filters.name);
   if (filters?.email) params.append("email", filters.email);
   if (filters?.role) params.append("role", filters.role);
+  params.append("page", String(filters.page ?? 0));
+  params.append("size", String(filters.size ?? 20));
 
   const queryString = params.toString();
   const url = queryString ? `/api/admin/users?${queryString}` : "/api/admin/users";
 
   try {
     const res = await authClient.get(url);
-    return pageContent<UserProfile>(res.data);
+    return pageResponse<UserProfile>(res.data, filters.page ?? 0, filters.size ?? 20);
   } catch (err) {
     throw new Error(extractErrorMessage(err));
   }
 };
 
+export const getAllUsersApi = async (filters?: GetUsersFiltersRequest): Promise<UserProfile[]> => {
+  const page = await getAllUsersPageApi(filters);
+  return page.content;
+};
+
 // Get users by role (admin only)
-export const getUsersByRoleApi = async (role: "BURUH" | "MANDOR" | "ADMIN" | "SUPIR"): Promise<UserProfile[]> => {
+export const getUsersByRolePageApi = async (
+  role: "BURUH" | "MANDOR" | "ADMIN" | "SUPIR",
+  page = 0,
+  size = 20,
+): Promise<PageResponse<UserProfile>> => {
   try {
     const res = await authClient.get("/api/admin/users", {
-      params: { role },
+      params: { role, page, size },
     });
-    return pageContent<UserProfile>(res.data);
+    return pageResponse<UserProfile>(res.data, page, size);
   } catch (err) {
     throw new Error(extractErrorMessage(err));
   }
+};
+
+export const getUsersByRoleApi = async (
+  role: "BURUH" | "MANDOR" | "ADMIN" | "SUPIR",
+): Promise<UserProfile[]> => {
+  const page = await getUsersByRolePageApi(role);
+  return page.content;
 };
 
 // Assignment Management APIs
@@ -149,13 +176,25 @@ export const createAssignmentApi = async (request: CreateAssignmentRequest): Pro
   }
 };
 
-export const getAllAssignmentsApi = async (): Promise<AssignmentResponse[]> => {
+export const getAllAssignmentsPageApi = async (
+  page = 0,
+  size = 20,
+): Promise<PageResponse<AssignmentResponse>> => {
   try {
-    const res = await authClient.get("/api/assignments");
-    return pageContent<RawAssignmentResponse>(res.data).map(normalizeAssignment);
+    const res = await authClient.get("/api/assignments", { params: { page, size } });
+    const data = pageResponse<RawAssignmentResponse>(res.data, page, size);
+    return {
+      ...data,
+      content: data.content.map(normalizeAssignment),
+    };
   } catch (err) {
     throw new Error(extractErrorMessage(err));
   }
+};
+
+export const getAllAssignmentsApi = async (): Promise<AssignmentResponse[]> => {
+  const page = await getAllAssignmentsPageApi();
+  return page.content;
 };
 
 export const getAssignmentByIdApi = async (id: string): Promise<AssignmentResponse> => {
@@ -176,15 +215,34 @@ export const getAssignmentsByBuruhApi = async (buruhId: string): Promise<Assignm
   }
 };
 
-export const getAssignmentsByMandorApi = async (mandorId: string): Promise<AssignmentResponse[]> => {
+export const getAssignmentsByMandorPageApi = async (
+  mandorId: string,
+  page = 0,
+  size = 20,
+): Promise<PageResponse<AssignmentResponse>> => {
   try {
-    const res = await authClient.get(`/api/assignments/mandor/${mandorId}`);
+    const res = await authClient.get(`/api/assignments/mandor/${mandorId}`, {
+      params: { page, size },
+    });
     const data = unwrap<MandorAssignmentsResponse | RawAssignmentResponse[]>(res.data);
-    const assignments = Array.isArray(data) ? data : data.content;
-    return (assignments ?? []).map(normalizeAssignment);
+    if (Array.isArray(data)) {
+      return pageResponse<AssignmentResponse>(data.map(normalizeAssignment), page, size);
+    }
+    return {
+      content: (data?.content ?? []).map(normalizeAssignment),
+      page: data?.page ?? page,
+      size: data?.size ?? size,
+      totalElements: data?.totalElements ?? data?.content?.length ?? 0,
+      totalPages: data?.totalPages ?? 0,
+    };
   } catch (err) {
     throw new Error(extractErrorMessage(err));
   }
+};
+
+export const getAssignmentsByMandorApi = async (mandorId: string): Promise<AssignmentResponse[]> => {
+  const page = await getAssignmentsByMandorPageApi(mandorId);
+  return page.content;
 };
 
 export const deleteAssignmentApi = async (id: string): Promise<void> => {

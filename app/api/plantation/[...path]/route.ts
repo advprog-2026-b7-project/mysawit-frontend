@@ -12,7 +12,7 @@ type RouteContext = {
 function buildTargetUrl(baseUrl: string, path: string[], search: string) {
   const normalizedBase = baseUrl.endsWith("/") ? baseUrl.slice(0, -1) : baseUrl;
   const encodedPath = path.map(encodeURIComponent).join("/");
-  return `${normalizedBase}/${encodedPath}${search}`;
+  return `${normalizedBase}/api/${encodedPath}${search}`;
 }
 
 async function proxyRequest(request: Request, context: RouteContext) {
@@ -20,13 +20,26 @@ async function proxyRequest(request: Request, context: RouteContext) {
   const sourceUrl = new URL(request.url);
   const targetUrl = buildTargetUrl(PLANTATION_BACKEND_URL, path, sourceUrl.search);
 
+  const cookieHeader = request.headers.get("cookie") ?? "";
+  const tokenMatch = cookieHeader.match(/(?:^|;\s*)access_token=([^;]+)/);
+  const rawToken = tokenMatch?.[1]?.trim();
+  const accessToken = rawToken ? decodeURIComponent(rawToken) : undefined;
+
+  if (!accessToken) {
+    return Response.json(
+      { status: "error", message: "No access_token cookie — not authenticated" },
+      { status: 401 }
+    );
+  }
+
   const headers = new Headers();
   for (const [key, value] of request.headers.entries()) {
     const lowerKey = key.toLowerCase();
-    if (["accept", "authorization", "content-type"].includes(lowerKey)) {
+    if (["accept", "content-type"].includes(lowerKey)) {
       headers.set(key, value);
     }
   }
+  headers.set("authorization", `Bearer ${accessToken}`);
 
   const init: RequestInit & { duplex?: "half" } = {
     method: request.method,

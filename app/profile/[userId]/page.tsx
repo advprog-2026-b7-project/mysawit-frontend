@@ -19,7 +19,7 @@ export default function AdminUserProfilePage() {
   // Check if user is authenticated and is ADMIN
   React.useEffect(() => {
     if (!authLoading && !authUser) {
-      router.push("/auth/login");
+      router.push("/login");
     }
   }, [authUser, authLoading, router]);
 

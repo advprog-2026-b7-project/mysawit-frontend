@@ -26,7 +26,7 @@ export default function PlantationPage() {
 
   useEffect(() => {
     if (authLoading) return;
-    if (!authUser) { router.push("/auth/login"); return; }
+    if (!authUser) { router.push("/login"); return; }
     if (authUser.role !== "ADMIN") { router.push("/dashboard"); }
   }, [authUser, authLoading, router]);
 

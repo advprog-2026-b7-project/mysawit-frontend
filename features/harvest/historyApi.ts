@@ -41,7 +41,7 @@ class HarvestHistoryClient {
     try {
       const response = await harvestServiceClient.get<
         ApiSuccessResponse<HarvestPageResponse | HarvestPageResponse["content"]>
-      >("/api/v1/harvests", {
+      >("v1/harvests", {
         params: {
           page: filters.page ?? 0,
           size: filters.size ?? 20,
@@ -65,7 +65,7 @@ class HarvestHistoryClient {
     try {
       const response = await harvestServiceClient.get<
         ApiSuccessResponse<HarvestPageResponse | HarvestPageResponse["content"]>
-      >(`/api/v1/users/${buruhId}/harvests`, {
+      >(`v1/users/${buruhId}/harvests`, {
         params: {
           page: filters.page ?? 0,
           size: filters.size ?? 20,
@@ -90,7 +90,7 @@ class HarvestHistoryClient {
     try {
       const response = await harvestServiceClient.patch<
         ApiSuccessResponse<ApproveHarvestResponse>
-      >(`/api/v1/harvests/${harvestId}/approve`);
+      >(`v1/harvests/${harvestId}/approve`);
       return response.data.data;
     } catch (error) {
       throw new Error(extractErrorMessage(error));
@@ -104,7 +104,7 @@ class HarvestHistoryClient {
     try {
       const response = await harvestServiceClient.patch<
         ApiSuccessResponse<RejectHarvestResponse>
-      >(`/api/v1/harvests/${harvestId}/reject`, { rejectionReason });
+      >(`v1/harvests/${harvestId}/reject`, { rejectionReason });
       return response.data.data;
     } catch (error) {
       throw new Error(extractErrorMessage(error));

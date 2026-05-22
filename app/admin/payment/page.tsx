@@ -6,7 +6,6 @@ import {
   PayrollList,
   PayrollStats,
   WageVariablesForm,
-  WalletWidget,
 } from '@/features/payment/components';
 
 export default function AdminPaymentPage() {
@@ -97,12 +96,6 @@ export default function AdminPaymentPage() {
           {activeTab === 'overview' && (
             <div className="space-y-6">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Wallet Widget */}
-                <div>
-                  <h2 className="text-xl font-bold text-gray-800 mb-4">Saldo Dompet Admin</h2>
-                  <WalletWidget onTopUpSuccess={() => setRefreshKey((prev) => prev + 1)} />
-                </div>
-
                 {/* Quick Stats */}
                 <div className="space-y-3">
                   <h2 className="text-xl font-bold text-gray-800">Statistik Cepat</h2>
@@ -155,51 +148,6 @@ export default function AdminPaymentPage() {
             </div>
           )}
 
-          {/* Wallet Tab */}
-          {activeTab === 'wallet' && (
-            <div className="space-y-6">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div>
-                  <h2 className="text-xl font-bold text-gray-800 mb-4">Manajemen Dompet</h2>
-                  <WalletWidget onTopUpSuccess={() => setRefreshKey((prev) => prev + 1)} />
-                </div>
-
-                <div className="bg-white rounded-lg shadow p-6">
-                  <h3 className="text-lg font-semibold text-gray-800 mb-4">ℹ️ Informasi Dompet</h3>
-                  <ul className="space-y-3 text-sm text-gray-700">
-                    <li className="flex gap-2">
-                      <span>💰</span>
-                      <span>Saldo minimum untuk transfer: 1 SawitDollar ($)</span>
-                    </li>
-                    <li className="flex gap-2">
-                      <span>💵</span>
-                      <span>1 SawitDollar ($) = Rp 10.000,00</span>
-                    </li>
-                    <li className="flex gap-2">
-                      <span>📤</span>
-                      <span>Saldo akan berkurang saat menyetujui penggajian</span>
-                    </li>
-                    <li className="flex gap-2">
-                      <span>🔄</span>
-                      <span>Top-up dapat dilakukan kapan saja</span>
-                    </li>
-                    <li className="flex gap-2">
-                      <span>✓</span>
-                      <span>Pembayaran sandbox tersedia untuk testing</span>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-
-              {/* Transaction History */}
-              <div className="bg-white rounded-lg shadow p-6">
-                <h3 className="text-lg font-semibold text-gray-800 mb-4">Riwayat Transaksi</h3>
-                <div className="text-center py-8 text-gray-500">
-                  <p>Belum ada riwayat transaksi</p>
-                </div>
-              </div>
-            </div>
-          )}
         </div>
       </div>
     </div>

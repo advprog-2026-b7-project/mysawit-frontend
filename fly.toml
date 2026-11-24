@@ -1,0 +1,29 @@
+app = 'mysawit-frontend'
+primary_region = 'syd'
+
+[build]
+  [build.args]
+    NEXT_PUBLIC_AUTH_API_URL = 'https://mysawit-auth.fly.dev'
+    NEXT_PUBLIC_PLANTATION_API_URL = 'https://mysawit-plantation.fly.dev'
+    NEXT_PUBLIC_DELIVERY_API_URL = 'https://mysawit-delivery.fly.dev'
+    NEXT_PUBLIC_HARVEST_API_URL = 'https://mysawit-harvest.fly.dev'
+    NEXT_PUBLIC_PAYMENT_API_URL = 'https://mysawit-payment.fly.dev'
+
+# Read at request time by the app/api/*/route.ts proxies.
+[env]
+  PLANTATION_API_URL = 'https://mysawit-plantation.fly.dev'
+  HARVEST_API_URL = 'https://mysawit-harvest.fly.dev'
+  DELIVERY_API_URL = 'https://mysawit-delivery.fly.dev'
+
+[http_service]
+  internal_port = 3000
+  force_https = true
+  auto_stop_machines = 'stop'
+  auto_start_machines = true
+  min_machines_running = 0
+  processes = ['app']
+
+[[vm]]
+  memory = '1gb'
+  cpu_kind = 'shared'
+  cpus = 1

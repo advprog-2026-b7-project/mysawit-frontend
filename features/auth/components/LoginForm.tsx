@@ -123,7 +123,7 @@ export default function LoginForm() {
 
         <form onSubmit={handleSubmit} noValidate>
           <TextInput
-            label="Username"
+            label="Email"
             placeholder="Type here"
             value={email}
             onChange={(e) => {
